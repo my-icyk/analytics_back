@@ -15,5 +15,15 @@
         "**/.pytest_cache": true,
         "**/.mypy_cache": true,
         "**/.ruff_cache": true
-    }
+    },
+    "python-envs.pythonProjects": [
+        {
+            "path": "back",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ],
+    "python.analysis.extraPaths": [
+        "./back"
+    ]
 }
