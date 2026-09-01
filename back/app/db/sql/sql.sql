@@ -1,4 +1,3 @@
-
 CREATE TABLE api.roles (
     id BIGINT PRIMARY KEY IDENTITY(1,1) NOT NULL,
 
@@ -12,11 +11,7 @@ CREATE TABLE api.roles (
 
 CREATE TABLE api.permissions (
     id BIGINT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-
-    name VARCHAR(150) UNIQUE NOT NULL,
-    description VARCHAR(500) NULL,
-
-    created_at DATETIME2(0) NOT NULL DEFAULT GETDATE()
+    name VARCHAR(150) UNIQUE NOT NULL
 
 );
 
@@ -30,11 +25,13 @@ CREATE TABLE api.user_roles (
 
     CONSTRAINT FK_user_roles_user
         FOREIGN KEY (user_id)
-        REFERENCES api.users(id),
+        REFERENCES api.users(id)
+		ON DELETE CASCADE,
 
     CONSTRAINT FK_user_roles_role
         FOREIGN KEY (role_id)
         REFERENCES api.roles(id)
+		ON DELETE CASCADE
 );
 
 
@@ -43,15 +40,16 @@ CREATE TABLE api.role_permissions (
     permission_id BIGINT NOT NULL,
 
     CONSTRAINT PK_role_permissions
-        PRIMARY KEY (role_id, permission_id),
+    PRIMARY KEY (role_id, permission_id),
 
     CONSTRAINT FK_role_permissions_role
-        FOREIGN KEY (role_id)
-        REFERENCES api.roles(id),
+    FOREIGN KEY (role_id)
+	REFERENCES api.roles(id)
+	ON DELETE CASCADE,
 
 
     CONSTRAINT FK_role_permissions_permission
-        FOREIGN KEY (permission_id)
-        REFERENCES api.permissions(id)
-
+    FOREIGN KEY (permission_id)
+    REFERENCES api.permissions(id)
+	ON DELETE CASCADE
 );
