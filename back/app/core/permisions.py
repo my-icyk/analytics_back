@@ -3,7 +3,7 @@ from enum import StrEnum
 from app.models.user import User
 
 
-class Permission(StrEnum):
+class PermissionEnum(StrEnum):
     USERS_CREATE = "users:create"
     USERS_READ = "users:read"
     USERS_UPDATE = "users:update"
@@ -24,7 +24,7 @@ class Permission(StrEnum):
     ROLE_ASSIGN = "role:assign"
 
 
-def has_permission(user: User, permission: Permission) -> bool:
+def has_permission(user: User, permission: PermissionEnum) -> bool:
     if user.is_admin:
         return True
 
