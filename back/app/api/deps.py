@@ -5,14 +5,34 @@ from sqlalchemy.orm import Session
 from app.core.security import decode_access_token
 from app.db.database import get_db
 from app.models.user import User
+from app.repositories.auth_repository import AuthRepository
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
+from app.services.auth_service import AuthService
 from app.services.permission_service import PermissionService
 from app.services.role_service import RoleService
 from app.services.user_service import UserService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=False)
+
+
+# TODO: WTF HERE IS HAPPENDS
+
+
+def get_auth_repository(db: Session = Depends(get_db)) -> AuthRepository:
+    return AuthRepository(db)
+
+
+def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
+    return UserRepository(db)
+
+
+def get_auth_service(
+    user_repo: UserRepository = Depends(get_user_repository),
+    auth_repo: AuthRepository = Depends(get_auth_repository),
+) -> AuthService:
+    return AuthService(user_repo, auth_repo)
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:
@@ -28,7 +48,8 @@ def get_permission_service(db: Session = Depends(get_db)) -> PermissionService:
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+    token: str | None = Depends(oauth2_scheme),
+    user_repo: UserRepository = Depends(get_user_repository),
 ) -> User:
     # todo: add caching for user retrieval to reduce db hits
     # todo: add token expiration check and refresh mechanism

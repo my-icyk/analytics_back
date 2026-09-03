@@ -13,6 +13,9 @@ from fastapi.responses import JSONResponse
 from app.exceptions.exceptions import (
     AlreadyExistsError,
     ForbiddenError,
+    InactiveUserError,
+    InvalidCredentialsError,
+    InvalidTokenError,
     NotFoundError,
     UserNotFoundError,
 )
@@ -60,3 +63,19 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code=409,
             content={"detail": str(exc)},
         )
+
+    @app.exception_handler(InvalidCredentialsError)
+    def invalid_credentials_handler(_request: Request, exc: InvalidCredentialsError):
+        return JSONResponse(status_code=401, content={"detail": str(exc)})
+
+    @app.exception_handler(InvalidTokenError)
+    def invalid_token_handler(_request: Request, exc: InvalidTokenError):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": str(exc)},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    @app.exception_handler(InactiveUserError)
+    def inactive_user_handler(_request: Request, exc: InactiveUserError):
+        return JSONResponse(status_code=403, content={"detail": str(exc)})

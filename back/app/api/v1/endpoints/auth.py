@@ -1,82 +1,102 @@
-from datetime import timedelta
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_auth_service, get_current_user
 from app.config import get_settings
-from app.core.security import (
-    create_access_token,
-    get_password_hash,
-    needs_rehash,
-    verify_password,
-)
-from app.db.database import get_db
-from app.exceptions.exceptions import AlreadyExistsError
+from app.exceptions.exceptions import InvalidTokenError
 from app.models.user import User
-from app.repositories.user_repository import UserRepository
-from app.schemas.auth import Token
-from app.schemas.user_schemas import UserCreate, UserRead
+from app.schemas.auth_schemas import LoginRequest, TokenResponse, UserRegister
+from app.schemas.user_schemas import UserRead
+from app.services.auth_service import AuthService
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
+
+REFRESH_COOKIE_NAME = "refresh_token"
+# Cookie is scoped to /auth so it's never sent on unrelated API calls —
+# only the login/refresh/logout endpoints ever see it.
+REFRESH_COOKIE_PATH = "/auth"
+
+
+def _set_refresh_cookie(response: Response, token: str, expires_at: datetime) -> None:
+    response.set_cookie(
+        key=REFRESH_COOKIE_NAME,
+        value=token,
+        httponly=True,  # not readable by JS -> mitigates XSS token theft
+        secure=settings.COOKIE_SECURE,  # see config.py: must be True in production
+        samesite="lax",
+        expires=expires_at,
+        path=REFRESH_COOKIE_PATH,
+    )
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def register(
-    user_data: UserCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    payload: UserRegister,
+    service: AuthService = Depends(get_auth_service),
+    current_user: User | None = Depends(get_current_user),
+):
+    row = service.register(payload, current_user=current_user)
+    return UserRead.model_validate(row)
+
+
+@router.post("/token", response_model=TokenResponse, include_in_schema=False)
+def login_for_swagger(
+    response: Response,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    service: AuthService = Depends(get_auth_service),
 ):
     """
-    Register a new user. Only accessible by admin users.
+    Form-encoded login, used only by Swagger UI's 'Authorize' button
+    (which sends application/x-www-form-urlencoded, not JSON). Same
+    AuthService.login() underneath — no logic duplicated. Hidden from the
+    schema (include_in_schema=False) so it doesn't show up as a second,
+    confusing '/login' option in the docs.
     """
-
-    if UserRepository(db).get_by_username(user_data.username):
-        raise AlreadyExistsError("User", "username", user_data.username)
-
-    repo = UserRepository(db)
-
-    if repo.get_by_username(user_data.username):
-        raise AlreadyExistsError("User", "username", user_data.username)
-
-    user = repo.create(user_data.username, get_password_hash(user_data.password))
-    return user
-
-
-@router.post("/login", response_model=Token)
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
-):
-    """
-    Login endpoint. Returns JWT access token.
-    Token expires after ACCESS_TOKEN_EXPIRE_MINUTES (from config).
-    """
-    user = UserRepository(db).get_by_username(form_data.username)
-
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User account is disabled"
-        )
-
-    # Check if password hash needs updating (e.g., from bcrypt to argon2)
-    if needs_rehash(user.hashed_password):
-        user.hashed_password = get_password_hash(form_data.password)
-        db.commit()
-
-    # Create access token with configured expiration time
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username, "user_id": user.id},
-        expires_delta=access_token_expires,
+    access_token, refresh_token, expires_at = service.login(
+        form_data.username, form_data.password
     )
+    _set_refresh_cookie(response, refresh_token, expires_at)
+    return TokenResponse(access_token=access_token)
 
-    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/login", response_model=TokenResponse)
+def login(
+    payload: LoginRequest,
+    response: Response,
+    service: AuthService = Depends(get_auth_service),
+):
+    access_token, refresh_token, expires_at = service.login(
+        payload.username, payload.password
+    )
+    _set_refresh_cookie(response, refresh_token, expires_at)
+    return TokenResponse(access_token=access_token)
+
+
+@router.post("/refresh", response_model=TokenResponse)
+def refresh(
+    request: Request,
+    response: Response,
+    service: AuthService = Depends(get_auth_service),
+):
+    raw_refresh = request.cookies.get(REFRESH_COOKIE_NAME)
+    if raw_refresh is None:
+        raise InvalidTokenError()
+
+    access_token, new_refresh, expires_at = service.refresh(raw_refresh)
+    _set_refresh_cookie(response, new_refresh, expires_at)
+    return TokenResponse(access_token=access_token)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    request: Request,
+    response: Response,
+    service: AuthService = Depends(get_auth_service),
+):
+    raw_refresh = request.cookies.get(REFRESH_COOKIE_NAME)
+    if raw_refresh:
+        service.logout(raw_refresh)
+    response.delete_cookie(REFRESH_COOKIE_NAME, path=REFRESH_COOKIE_PATH)

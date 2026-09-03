@@ -1,3 +1,19 @@
+class InvalidCredentialsError(Exception):
+    def __init__(self):
+        super().__init__("Invalid name or password")
+
+
+class InvalidTokenError(Exception):
+    def __init__(self):
+        super().__init__("Invalid or expired token")
+
+
+class InactiveUserError(Exception):
+    def __init__(self, user_id: int):
+        self.user_id = user_id
+        super().__init__(f"User {user_id} is inactive")
+
+
 class UserNotFoundError(Exception):
     def __init__(self, user_id: int):
         self.user_id = user_id
