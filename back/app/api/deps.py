@@ -68,7 +68,7 @@ def get_current_user(
     username: str = payload.get("sub")
     if username is None:
         raise credentials_exception
-    user = UserRepository(db).get_by_username(username)
+    user = user_repo.get_by_username(username)
     if user is None:
         raise credentials_exception
 
