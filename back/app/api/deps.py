@@ -9,10 +9,12 @@ from app.repositories.auth_repository import AuthRepository
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
+from app.repositories.user_role_repository import UserRoleRepository
 from app.schemas.user_schemas import MyUser, UserRead
 from app.services.auth_service import AuthService
 from app.services.permission_service import PermissionService
 from app.services.role_service import RoleService
+from app.services.user_roles_service import UserRoleService
 from app.services.user_service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=False)
@@ -29,11 +31,27 @@ def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
     return UserRepository(db)
 
 
+def get_role_repository(db: Session = Depends(get_db)) -> RoleRepository:
+    return RoleRepository(db)
+
+
+def get_user_role_repository(db: Session = Depends(get_db)) -> UserRoleRepository:
+    return UserRoleRepository(db)
+
+
 def get_auth_service(
     user_repo: UserRepository = Depends(get_user_repository),
     auth_repo: AuthRepository = Depends(get_auth_repository),
 ) -> AuthService:
     return AuthService(user_repo, auth_repo)
+
+
+def get_user_role_service(
+    user_role_repo: UserRoleRepository = Depends(get_user_role_repository),
+    role_repo: RoleRepository = Depends(get_role_repository),
+    user_repo: UserRepository = Depends(get_user_repository),
+) -> UserRoleService:
+    return UserRoleService(user_role_repo, role_repo, user_repo)
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:

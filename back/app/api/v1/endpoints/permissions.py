@@ -5,7 +5,7 @@ from app.models.user import User
 from app.schemas.permission_schema import PermissionRead
 from app.services.permission_service import PermissionService
 
-router = APIRouter()
+router = APIRouter(prefix="/permissions", tags=["permissions"])
 
 
 @router.get("/", response_model=list[PermissionRead])
