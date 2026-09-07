@@ -7,12 +7,14 @@ from app.db.database import get_db
 from app.models.user import User
 from app.repositories.auth_repository import AuthRepository
 from app.repositories.permision_repository import PermissionRepository
+from app.repositories.role_permission_repository import RolePermissionRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.user_role_repository import UserRoleRepository
 from app.schemas.user_schemas import MyUser, UserRead
 from app.services.auth_service import AuthService
 from app.services.permission_service import PermissionService
+from app.services.role_permission_service import RolePermissionService
 from app.services.role_service import RoleService
 from app.services.user_roles_service import UserRoleService
 from app.services.user_service import UserService
@@ -52,6 +54,30 @@ def get_user_role_service(
     user_repo: UserRepository = Depends(get_user_repository),
 ) -> UserRoleService:
     return UserRoleService(user_role_repo, role_repo, user_repo)
+
+
+def get_permission_repository(db: Session = Depends(get_db)) -> PermissionRepository:
+    return PermissionRepository(db)
+
+
+def get_role_permission_repository(
+    db: Session = Depends(get_db),
+) -> RolePermissionRepository:
+    return RolePermissionRepository(db)
+
+
+def get_role_permission_service(
+    role_repository: RoleRepository = Depends(get_role_repository),
+    permission_repo: PermissionRepository = Depends(get_permission_repository),
+    role_permission_repo: RolePermissionRepository = Depends(
+        get_role_permission_repository
+    ),
+) -> RolePermissionService:
+    return RolePermissionService(
+        role_repository=role_repository,
+        permission_repository=permission_repo,
+        role_permission_repository=role_permission_repo,
+    )
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:
