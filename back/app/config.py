@@ -14,7 +14,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 2
 
-    COOKIE_SECURE: bool = True
+    # Local development uses HTTP; set COOKIE_SECURE=True in production HTTPS.
+    COOKIE_SECURE: bool = False
 
     # model_config = SettingsConfigDict(
     #     env_file=".env",
@@ -26,12 +27,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings():
     return Settings()
-
-
-# For testing
-if __name__ == "__main__":
-    settings = get_settings()
-    print(f"DATABASE_URL: {settings.DATABASE_URL}")
-    print(
-        f"SECRET_KEY: {settings.SECRET_KEY[:20]}..."
-    )  # Only show first 10 chars for security

@@ -13,6 +13,11 @@ class RoleService:
     def __init__(self, role_repository: RoleRepository):
         self.role_repository = role_repository
 
+    def get_all_roles(self, current_user: User) -> list[Role]:
+        if not has_permission(current_user, PermissionEnum.ROLES_READ):
+            raise ForbiddenError("You dont have permission to access roles data.")
+        return self.role_repository.get_all()
+
     def create_role(
         self, name: str, description: str | None, current_user: User
     ) -> Role:

@@ -4,6 +4,14 @@ from app.repositories.base import BaseRepository
 
 
 class RoleRepository(BaseRepository):
+    def get_all(self) -> list[Role]:
+        sql = """
+            SELECT id, name, description, created_at
+            FROM api.roles
+        """
+        rows = self._fetch_all(sql, {})
+        return [Role.model_validate(row) for row in rows]
+
     def get_by_id(self, role_id: int) -> Role | None:
         sql = """
             SELECT id, name, description, created_at

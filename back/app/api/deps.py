@@ -9,6 +9,7 @@ from app.repositories.auth_repository import AuthRepository
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.user_repository import UserRepository
+from app.schemas.user_schemas import MyUser, UserRead
 from app.services.auth_service import AuthService
 from app.services.permission_service import PermissionService
 from app.services.role_service import RoleService
@@ -65,11 +66,42 @@ def get_current_user(
     if payload is None:
         raise credentials_exception
 
-    username: str = payload.get("sub")
-    if username is None:
+    user_id: int = payload.get("sub")
+    if user_id is None:
         raise credentials_exception
-    user = user_repo.get_by_username(username)
+    user = user_repo.get_by_id(user_id)
     if user is None:
         raise credentials_exception
 
     return user
+
+
+# TODO: need to chenge the logic of this function, because it is not good to return the user with permissions in this way, maybe we need to create a new model for this
+def get_my_user_info(
+    token: str | None = Depends(oauth2_scheme),
+    user_repo: UserRepository = Depends(get_user_repository),
+) -> MyUser:
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    payload = decode_access_token(token)
+    if payload is None:
+        raise credentials_exception
+
+    user_id: int = payload.get("sub")
+    if user_id is None:
+        raise credentials_exception
+
+    user = user_repo.get_by_id(user_id)
+    if user is None:
+        raise credentials_exception
+    permissions = user_repo.get_user_permissions(user_id)
+
+    return MyUser(
+        user=UserRead(id=user.id, username=user.username, is_admin=user.is_admin),
+        permissions=permissions,
+    )

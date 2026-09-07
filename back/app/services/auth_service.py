@@ -24,7 +24,7 @@ from app.exceptions.exceptions import (
 from app.models.user import User
 from app.repositories.auth_repository import AuthRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_schemas import UserRegister
+from app.schemas.user_schemas import UserCreate
 
 
 class AuthService:
@@ -33,17 +33,18 @@ class AuthService:
         self.auth_repo = auth_repo
 
     # -----------------------------------------------------------------
-    def register(self, data: UserRegister, current_user: User) -> dict:
+    def create_user(self, data: UserCreate, current_user: User) -> User:
         if not has_permission(current_user, PermissionEnum.USERS_CREATE):
             raise ForbiddenError("You dont have permission to create a user.")
         validate_password_strength(data.password)
         hashed = get_password_hash(data.password)
-        return self.user_repo.create_with_password(
-            name=data.name,
-            role=data.role,
-            is_active=data.is_active,
+        user = self.user_repo.create(
+            username=data.username,
             hashed_password=hashed,
+            is_admin=data.is_admin,
         )
+        print(f"User created: {user}")
+        return user
 
     # -----------------------------------------------------------------
     def login(self, name: str, password: str) -> tuple[str, str, datetime]:
@@ -89,17 +90,15 @@ class AuthService:
             self.auth_repo.revoke_all_for_user(stored["user_id"])
             raise InvalidTokenError()
 
-        user = self.user_repo.get(stored["user_id"])
-        if user is None or not user["is_active"]:
+        user = self.user_repo.get_by_id(stored["user_id"])
+        if user is None or not user.is_active:
             raise InvalidTokenError()
 
-        access_token = create_access_token(
-            {"sub": str(user["id"]), "role": user["role"]}
-        )
+        access_token = create_access_token({"sub": str(user.id)})
         new_raw_refresh, new_hash, new_expires_at = create_refresh_token(
-            {"sub": str(user["id"])}
+            {"sub": str(user.id)}
         )
-        new_row = self.auth_repo.create(user["id"], new_hash, new_expires_at)
+        new_row = self.auth_repo.create(user.id, new_hash, new_expires_at)
         self.auth_repo.revoke(stored["id"], replaced_by=new_row["id"])
 
         return access_token, new_raw_refresh, new_expires_at

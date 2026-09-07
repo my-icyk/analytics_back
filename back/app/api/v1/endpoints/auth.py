@@ -3,12 +3,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.deps import get_auth_service, get_current_user
+from app.api.deps import get_auth_service
 from app.config import get_settings
 from app.exceptions.exceptions import InvalidTokenError
-from app.models.user import User
-from app.schemas.auth_schemas import LoginRequest, TokenResponse, UserRegister
-from app.schemas.user_schemas import UserRead
+from app.schemas.auth_schemas import LoginRequest, TokenResponse
 from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -28,18 +26,7 @@ def _set_refresh_cookie(response: Response, token: str, expires_at: datetime) ->
         secure=settings.COOKIE_SECURE,  # see config.py: must be True in production
         samesite="lax",
         expires=expires_at,
-        path=REFRESH_COOKIE_PATH,
     )
-
-
-@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register(
-    payload: UserRegister,
-    service: AuthService = Depends(get_auth_service),
-    current_user: User | None = Depends(get_current_user),
-):
-    row = service.register(payload, current_user=current_user)
-    return UserRead.model_validate(row)
 
 
 @router.post("/token", response_model=TokenResponse, include_in_schema=False)

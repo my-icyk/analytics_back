@@ -6,7 +6,15 @@ from app.schemas.role_schema import RoleCreate, RoleRead
 from app.schemas.user_schemas import UserRead
 from app.services.role_service import RoleService
 
-router = APIRouter()
+router = APIRouter(prefix="/roles", tags=["roles"])
+
+
+@router.get("/", response_model=list[RoleRead])
+def get_all_roles(
+    service: RoleService = Depends(get_role_service),
+    current_user: User = Depends(get_current_user),
+):
+    return service.get_all_roles(current_user)
 
 
 @router.post("/", response_model=RoleRead)
