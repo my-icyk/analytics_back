@@ -52,4 +52,4 @@ class AlreadyExistsError(Exception):
         self.field = field
         self.value = value
 
-        super().__init__(f"{entity} with {field}: {value} already exists")
+        super().__init__(f"{entity} with {field}: '{value}' already exists")
