@@ -122,3 +122,16 @@ class UserRepository(BaseRepository):
         """
         rows = self._fetch_all(sql, {})
         return [User.model_validate(row) for row in rows]
+
+    def has_permission(self, user_id: int, permission_name: str) -> bool:
+        sql = """
+            SELECT 1
+            FROM api.permissions p
+            JOIN api.role_permissions rp ON p.id = rp.permission_id
+            JOIN api.user_roles ur ON rp.role_id = ur.role_id
+            WHERE ur.user_id = :user_id AND p.name = :permission_name
+        """
+        row = self._fetch_one(
+            sql, {"user_id": user_id, "permission_name": permission_name}
+        )
+        return row is not None

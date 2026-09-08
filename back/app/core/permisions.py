@@ -1,6 +1,7 @@
 from enum import StrEnum
 
 from app.models.user import User
+from app.schemas.user_schemas import MyUser
 
 
 class PermissionEnum(StrEnum):
@@ -46,3 +47,13 @@ def has_permission(user: User, permission: PermissionEnum) -> bool:
 
     # return permission in user_permissions(user)
     return False  # Placeholder for actual permission checking logic
+
+
+# TODO: NEED HARD REWORDK THAT
+def user_has_permission(user_info: MyUser, permission: PermissionEnum) -> bool:
+    if user_info.user.is_admin:
+        return True
+
+    if permission in user_info.permissions:
+        return True
+    return False

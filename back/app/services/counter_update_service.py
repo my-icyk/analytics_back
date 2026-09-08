@@ -1,7 +1,6 @@
-from app.core.permisions import PermissionEnum, has_permission
+from app.core.permisions import PermissionEnum, user_has_permission
 from app.exceptions.exceptions import ForbiddenError, NotFoundError
 from app.models.counter_update import CounterUpdate
-from app.models.user import User
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.schemas.counter_update_schema import (
     CountersUpdateCreate,
@@ -9,14 +8,15 @@ from app.schemas.counter_update_schema import (
     CounterUpdateListResponse,
     CounterUpdateViewSchema,
 )
+from app.schemas.user_schemas import MyUser
 
 
 class CounterUpdateService:
     def __init__(self, repo: CounterUpdateRepository):
         self.repository = repo
 
-    def get_by_id(self, counter_update_id: int, current_user: User) -> CounterUpdate:
-        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_READ):
+    def get_by_id(self, counter_update_id: int, current_user: MyUser) -> CounterUpdate:
+        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_READ):
             raise ForbiddenError("You do not have permission to read counter updates.")
         row = self.repository.get_by_id(counter_update_id)
         if row is None:
@@ -24,9 +24,9 @@ class CounterUpdateService:
         return row
 
     def get_all(
-        self, current_user: User, query: CounterUpdateListQuery
+        self, current_user: MyUser, query: CounterUpdateListQuery
     ) -> CounterUpdateListResponse:
-        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_READ):
+        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_READ):
             raise ForbiddenError("You do not have permission to read counter updates.")
 
         items, next_cursor = self.repository.get_all(
@@ -39,8 +39,8 @@ class CounterUpdateService:
 
         return CounterUpdateListResponse(items=view_items, next_cursor=next_cursor)
 
-    def create(self, current_user: User, data: CountersUpdateCreate):
-        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_CREATE):
+    def create(self, current_user: MyUser, data: CountersUpdateCreate):
+        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_CREATE):
             raise ForbiddenError(
                 "You do not have permission to create counter updates."
             )
@@ -54,9 +54,9 @@ class CounterUpdateService:
         )
 
     def update(
-        self, current_user: User, counter_update_id: int, data: CountersUpdateCreate
+        self, current_user: MyUser, counter_update_id: int, data: CountersUpdateCreate
     ):
-        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_UPDATE):
+        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_UPDATE):
             raise ForbiddenError(
                 "You do not have permission to update counter updates."
             )
@@ -70,8 +70,8 @@ class CounterUpdateService:
             comment=data.comment,
         )
 
-    def delete(self, current_user: User, counter_update_id: int):
-        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_DELETE):
+    def delete(self, current_user: MyUser, counter_update_id: int):
+        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_DELETE):
             raise ForbiddenError(
                 "You do not have permission to delete counter updates."
             )
