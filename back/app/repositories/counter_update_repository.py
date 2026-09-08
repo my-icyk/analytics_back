@@ -40,7 +40,6 @@ class CounterUpdateRepository(BaseRepository):
 
         where = []
         params: dict[str, Any] = {"limit": limit}
-        print(cursor_id)
         if cursor_id is not None:
             where.append("id < :cursor_id")
             params["cursor_id"] = cursor_id
@@ -81,3 +80,87 @@ class CounterUpdateRepository(BaseRepository):
         items = [CounterUpdate.model_validate(row) for row in rows]
         next_cursor = items[-1].id if len(items) == limit else None
         return items, next_cursor
+
+    def create(
+        self,
+        *,
+        start_date: date,
+        end_date: date,
+        id_counter: int,
+        amount: int,
+        auto: bool,
+        comment: str | None = None,
+    ):
+        sql = """
+            INSERT INTO Adaugari.dbo.counters_update (
+                start_date,
+                end_date,
+                id_counter,
+                amount,
+                auto,
+                comment
+            ) VALUES (
+                :start_date,
+                :end_date,
+                :id_counter,
+                :amount,
+                :auto,
+                :comment
+            );
+        """
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "id_counter": id_counter,
+            "amount": amount,
+            "auto": auto,
+            "comment": comment,
+        }
+        self._execute(sql, params)
+
+    def update(
+        self,
+        *,
+        counter_update_id: int,
+        start_date: date,
+        end_date: date,
+        id_counter: int,
+        amount: int,
+        auto: bool,
+        comment: str | None = None,
+    ):
+        sql = """
+            UPDATE Adaugari.dbo.counters_update
+            SET
+                start_date = :start_date,
+                end_date = :end_date,
+                id_counter = :id_counter,
+                amount = :amount,
+                auto = :auto,
+                comment = :comment
+            WHERE id = :counter_update_id;
+        """
+        params = {
+            "counter_update_id": counter_update_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "id_counter": id_counter,
+            "amount": amount,
+            "auto": auto,
+            "comment": comment,
+        }
+        self._execute(sql, params)
+
+    def delete(
+        self,
+        *,
+        counter_update_id: int,
+    ):
+        sql = """
+            DELETE FROM Adaugari.dbo.counters_update
+            WHERE id = :counter_update_id;
+        """
+        params = {
+            "counter_update_id": counter_update_id,
+        }
+        self._execute(sql, params)

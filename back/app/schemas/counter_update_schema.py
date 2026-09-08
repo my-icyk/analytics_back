@@ -24,3 +24,12 @@ class CounterUpdateListQuery(BaseModel):
     auto: bool | None = None
     start_date_from: date | None = None
     start_date_to: date | None = None
+
+
+class CountersUpdateCreate(BaseModel):
+    start_date: date
+    end_date: date
+    id_counter: int
+    amount: int = 0
+    auto: bool
+    comment: str | None = None

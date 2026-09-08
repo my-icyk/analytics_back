@@ -1,5 +1,5 @@
 from app.core.permisions import PermissionEnum, has_permission
-from app.exceptions.exceptions import AlreadyExistsError, ForbiddenError, NotFoundError
+from app.exceptions.exceptions import AlreadyExistsError, ForbiddenError
 from app.models.role import Role
 from app.models.user import User
 from app.repositories.role_repository import RoleRepository
@@ -37,13 +37,13 @@ class UserRoleService:
     def remove(self, user_id: int, role_id: int, current_user: User) -> None:
         if not has_permission(current_user, PermissionEnum.USER_ROLES_DELETE):
             raise ForbiddenError("You don't have permission to remove roles.")
-
-        if not self.user_role_repository.exists(user_id, role_id):
-            raise NotFoundError(
-                entity="UserRole",
-                field="user_id and role_id",
-                value=f"{user_id} and {role_id}",
-            )
+        # TODO: for now i will not check , need to implement smth else
+        # if not self.user_role_repository.exists(user_id, role_id):
+        #     raise NotFoundError(
+        #         entity="UserRole",
+        #         field="user_id and role_id",
+        #         value=f"{user_id} and {role_id}",
+        #     )
 
         self.user_role_repository.delete(user_id, role_id)
 

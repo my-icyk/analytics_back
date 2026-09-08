@@ -4,6 +4,7 @@ from app.models.counter_update import CounterUpdate
 from app.models.user import User
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.schemas.counter_update_schema import (
+    CountersUpdateCreate,
     CounterUpdateListQuery,
     CounterUpdateListResponse,
     CounterUpdateViewSchema,
@@ -37,3 +38,41 @@ class CounterUpdateService:
         ]
 
         return CounterUpdateListResponse(items=view_items, next_cursor=next_cursor)
+
+    def create(self, current_user: User, data: CountersUpdateCreate):
+        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_CREATE):
+            raise ForbiddenError(
+                "You do not have permission to create counter updates."
+            )
+        self.repository.create(
+            start_date=data.start_date,
+            end_date=data.end_date,
+            id_counter=data.id_counter,
+            amount=data.amount,
+            auto=data.auto,
+            comment=data.comment,
+        )
+
+    def update(
+        self, current_user: User, counter_update_id: int, data: CountersUpdateCreate
+    ):
+        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_UPDATE):
+            raise ForbiddenError(
+                "You do not have permission to update counter updates."
+            )
+        self.repository.update(
+            counter_update_id=counter_update_id,
+            start_date=data.start_date,
+            end_date=data.end_date,
+            id_counter=data.id_counter,
+            amount=data.amount,
+            auto=data.auto,
+            comment=data.comment,
+        )
+
+    def delete(self, current_user: User, counter_update_id: int):
+        if not has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_DELETE):
+            raise ForbiddenError(
+                "You do not have permission to delete counter updates."
+            )
+        self.repository.delete(counter_update_id=counter_update_id)
