@@ -6,6 +6,7 @@ from app.core.security import decode_access_token
 from app.db.database import get_db
 from app.models.user import User
 from app.repositories.auth_repository import AuthRepository
+from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_permission_repository import RolePermissionRepository
 from app.repositories.role_repository import RoleRepository
@@ -13,6 +14,7 @@ from app.repositories.user_repository import UserRepository
 from app.repositories.user_role_repository import UserRoleRepository
 from app.schemas.user_schemas import MyUser, UserRead
 from app.services.auth_service import AuthService
+from app.services.counter_update_service import CounterUpdateService
 from app.services.permission_service import PermissionService
 from app.services.role_permission_service import RolePermissionService
 from app.services.role_service import RoleService
@@ -90,6 +92,20 @@ def get_role_service(db: Session = Depends(get_db)) -> RoleService:
 
 def get_permission_service(db: Session = Depends(get_db)) -> PermissionService:
     return PermissionService(PermissionRepository(db))
+
+
+def get_counter_update_repository(
+    db: Session = Depends(get_db),
+) -> CounterUpdateRepository:
+    return CounterUpdateRepository(db)
+
+
+def get_counter_update_service(
+    counter_update_repo: CounterUpdateRepository = Depends(
+        get_counter_update_repository
+    ),
+) -> CounterUpdateService:
+    return CounterUpdateService(counter_update_repo)
 
 
 def get_current_user(
