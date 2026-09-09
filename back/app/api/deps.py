@@ -109,7 +109,7 @@ def get_counter_update_service(
 
 
 def get_current_user(
-    token: str | None = Depends(oauth2_scheme),
+    token: str = Depends(oauth2_scheme),
     user_repo: UserRepository = Depends(get_user_repository),
 ) -> User:
     # todo: add caching for user retrieval to reduce db hits
@@ -126,7 +126,7 @@ def get_current_user(
     if payload is None:
         raise credentials_exception
 
-    user_id: int = payload.get("sub")
+    user_id: int | None = payload.get("sub")
     if user_id is None:
         raise credentials_exception
     user = user_repo.get_by_id(user_id)
@@ -138,7 +138,7 @@ def get_current_user(
 
 # TODO: need to chenge the logic of this function, because it is not good to return the user with permissions in this way, maybe we need to create a new model for this
 def get_my_user_info(
-    token: str | None = Depends(oauth2_scheme),
+    token: str = Depends(oauth2_scheme),
     user_repo: UserRepository = Depends(get_user_repository),
 ) -> MyUser:
 
@@ -147,12 +147,11 @@ def get_my_user_info(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
     payload = decode_access_token(token)
     if payload is None:
         raise credentials_exception
 
-    user_id: int = payload.get("sub")
+    user_id: int | None = payload.get("sub")
     if user_id is None:
         raise credentials_exception
 
