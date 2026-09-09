@@ -37,7 +37,7 @@ class NotFoundError(Exception):
         self,
         entity: str,
         field: str,
-        value: int,
+        value: str,
     ):
         self.entity = entity
         self.field = field

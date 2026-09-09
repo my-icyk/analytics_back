@@ -39,6 +39,8 @@ class PermissionEnum(StrEnum):
     COUNTERS_UPDATE_READ = "counters_update:read"
     COUNTERS_UPDATE_UPDATE = "counters_update:update"
     COUNTERS_UPDATE_DELETE = "counters_update:delete"
+    # specific permissions
+    PRODUCT_PRICES_READ = "product_prices:read"
 
 
 def has_permission(user: User, permission: PermissionEnum) -> bool:

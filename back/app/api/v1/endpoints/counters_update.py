@@ -10,7 +10,7 @@ from app.schemas.counter_update_schema import (
 from app.schemas.user_schemas import MyUser
 from app.services.counter_update_service import CounterUpdateService
 
-router = APIRouter(prefix="/counters_update", tags=["counters_update"])
+router = APIRouter(prefix="/counters_update", tags=["counters-update"])
 
 
 @router.get("/", response_model=CounterUpdateListResponse)
