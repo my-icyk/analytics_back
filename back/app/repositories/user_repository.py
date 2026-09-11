@@ -5,75 +5,94 @@ full row (including DB-generated id, created_at, updated_at) back in one
 round trip instead of a separate SELECT.
 """
 
-from app.models.role import Role
-from app.models.user import User
+from app.domains.user import User
 from app.repositories.base import BaseRepository
 
 
 class UserRepository(BaseRepository):
     def get_by_id(self, user_id: int) -> User | None:
         sql = """
-            SELECT id, username, role, is_active, created_at, is_admin, hashed_password
+            SELECT *
             FROM api.users
             WHERE id = :id
         """
-        row = self._fetch_one(sql, {"id": user_id})
-        if row is None:
-            return None
-        return User.model_validate(row)
+        row = self._fetch_one_or_none(sql, {"id": user_id})
+
+        return User.model_validate(row) if row is not None else None
 
     def get_by_username(self, username: str) -> User | None:
         sql = """
-            SELECT id, username, role, is_active, created_at, is_admin, hashed_password
+            SELECT *
             FROM api.users
             WHERE username = :username
         """
-        row = self._fetch_one(sql, {"username": username})
-        if row is None:
-            return None
-        return User.model_validate(row)
+        row = self._fetch_one_or_none(sql, {"username": username})
 
-    def create(
-        self, username: str, hashed_password: str, is_admin: bool = False
-    ) -> User:
+        return User.model_validate(row) if row is not None else None
+
+    def delete(self, user_id: int) -> None:
         sql = """
-            INSERT INTO api.users (username, hashed_password, is_admin)
-            OUTPUT INSERTED.id, INSERTED.username, INSERTED.role, INSERTED.is_active,
-                   INSERTED.created_at, INSERTED.is_admin, INSERTED.hashed_password
-            VALUES (:username, :hashed_password, :is_admin)
+            DELETE FROM api.users
+            WHERE id = :id
         """
-        row = self._fetch_one(
+        self._execute(sql, {"id": user_id})
+
+    def create(self, username: str, hashed_password: str) -> User:
+        sql = """
+            INSERT INTO api.users (username, hashed_password)
+            OUTPUT INSERTED.*
+            VALUES (:username, :hashed_password)
+        """
+        row = self._fetch_one_or_none(
             sql,
             {
                 "username": username,
                 "hashed_password": hashed_password,
-                "is_admin": is_admin,
             },
         )
+        assert row is not None, "INSERT with OUTPUT should always return a row"
         return User.model_validate(row)
 
-    def assign_role_to_user(self, user_id: int, role_id: int) -> None:
-        sql = """
-            INSERT INTO api.user_roles (user_id, role_id)
-            VALUES (:user_id, :role_id)
-        """
-        self._execute(sql, {"user_id": user_id, "role_id": role_id})
+    def update_user(self, user_id: int, username: str) -> User:
 
-    def remove_role_from_user(self, user_id: int, role_id: int) -> None:
-        sql = """
-            DELETE FROM api.user_roles
-            WHERE user_id = :user_id AND role_id = :role_id
-        """
-        self._execute(sql, {"user_id": user_id, "role_id": role_id})
+        params = {"user_id": user_id, "username": username}
 
-    def get_roles_by_user_id(self, user_id: int) -> list[Role] | None:
         sql = """
-            SELECT r.id, r.name, r.description, r.created_at
-            FROM api.roles r
-            JOIN api.user_roles ur ON r.id = ur.role_id
-            WHERE ur.user_id = :user_id
+            UPDATE api.users SET
+                username = :username
+            OUTPUT INSERTED.*
+            WHERE id = :user_id
         """
-        rows = self._fetch_all(sql, {"user_id": user_id})
-        if not rows:
-            return None
-        return [Role.model_validate(row) for row in rows]
+
+        row = self._fetch_one_or_none(sql, params)
+        assert row is not None, "UPDATE with OUTPUT should always return a row"
+        return User.model_validate(row)
+
+    def get_all_users(self) -> list[User]:
+        sql = """
+            SELECT *
+            FROM api.users
+        """
+        rows = self._fetch_all(sql, {})
+        return [User.model_validate(row) for row in rows]
+
+    def set_admin(self, user_id: int) -> User:
+        sql = """
+            UPDATE api.users SET
+                is_admin = 1
+            OUTPUT INSERTED.*
+            WHERE id = :user_id
+        """
+        row = self._update(sql, {"user_id": user_id})
+
+        return User.model_validate(row)
+
+    def revoke_admin(self, user_id: int) -> User:
+        sql = """
+            UPDATE api.users SET
+                is_admin = 0
+            OUTPUT INSERTED.*
+            WHERE id = :user_id
+        """
+        row = self._update(sql, {"user_id": user_id})
+        return User.model_validate(row)

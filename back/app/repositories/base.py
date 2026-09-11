@@ -17,15 +17,28 @@ class BaseRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def _fetch_one(self, sql: str, params: dict[str, Any]) -> dict | None:
+    def _fetch_one_or_none(self, sql: str, params: dict[str, Any]) -> dict | None:
         row = self.db.execute(text(sql), params).mappings().first()
         return dict(row) if row is not None else None
+
+    def _fetch_one(self, sql: str, params: dict[str, Any]) -> dict:
+        row = self._fetch_one_or_none(sql, params)
+        # TODO: To review later comment
+        assert row is not None, "Expected exactly one row"
+        return dict(row)
 
     def _fetch_all(self, sql: str, params: dict[str, Any]) -> list[dict]:
         rows = self.db.execute(text(sql), params).mappings().all()
         return [dict(r) for r in rows]
 
-    def _execute(self, sql: str, params: dict[str, Any]) -> int:
-        """For statements with no OUTPUT clause (e.g. plain DELETE). Returns rowcount."""
-        result = self.db.execute(text(sql), params)
-        return result.rowcount
+    def _execute(self, sql: str, params: dict[str, Any]) -> None:
+        self.db.execute(text(sql), params)
+
+    def _scalar(self, sql: str, params: dict[str, Any]) -> Any:
+        row = self.db.execute(text(sql), params).scalar()
+        return row
+
+    def _update(self, sql: str, params: dict[str, Any]) -> dict:
+        row = self._fetch_one_or_none(sql, params)
+        assert row is not None, "UPDATE with OUTPUT should always return a row"
+        return dict(row)

@@ -26,12 +26,13 @@ origins = [
     "http://localhost:5173",  # Vite
     "http://localhost:4173",  # CRA (if used)
     "http://analytics.local:8081",
+    "http://172.28.130.61:5173",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
 )

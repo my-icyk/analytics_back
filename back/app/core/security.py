@@ -1,9 +1,12 @@
+import hashlib
+import uuid
 from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from app.config import get_settings
+from app.exceptions.exceptions import PasswordMismatchError
 
 settings = get_settings()
 
@@ -34,15 +37,12 @@ def validate_password_strength(password: str) -> None:
     if len(password) > MAX_PASSWORD_LENGTH:
         raise ValueError(f"Password is too long (max {MAX_PASSWORD_LENGTH} characters)")
 
-    # Optional: Add complexity requirements
     has_upper = any(c.isupper() for c in password)
     has_lower = any(c.islower() for c in password)
     has_digit = any(c.isdigit() for c in password)
 
     if not (has_upper and has_lower and has_digit):
-        raise ValueError(
-            "Password must contain uppercase, lowercase, and digit characters"
-        )
+        raise PasswordMismatchError()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -60,52 +60,97 @@ def needs_rehash(hashed_password: str) -> bool:
     return pwd_context.needs_update(hashed_password)
 
 
+# ---------------------------------------------------------------------------
+# Access tokens
+# ---------------------------------------------------------------------------
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
-    Create a JWT access token.
-
-    Args:
-        data: Dictionary containing claims to encode in the token
-        expires_delta: Optional custom expiration time. If not provided,
-                      uses ACCESS_TOKEN_EXPIRE_MINUTES from settings
-
-    Returns:
-        Encoded JWT token string
+    Create a short-lived JWT access token. `type: access` prevents a refresh
+    token from being accepted anywhere an access token is expected.
     """
     to_encode = data.copy()
 
-    if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
-    else:
-        # Use the configured expiration time from settings
-        expire = datetime.now(UTC) + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+    expire = datetime.now(UTC) + (
+        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
 
     to_encode.update(
         {
             "exp": expire,
-            "iat": datetime.now(UTC),  # Issued at time
+            "iat": datetime.now(UTC),
+            "type": "access",
         }
     )
 
-    encoded_jwt = jwt.encode(
-        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
-    )
-    return encoded_jwt
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def decode_access_token(token: str) -> dict | None:
-    """
-    Decode and validate a JWT access token.
-
-    Returns:
-        Decoded payload dict if valid, None if invalid/expired
-    """
+    """Decode + validate an access token. Returns None if invalid, expired, or wrong type."""
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        return payload
     except JWTError:
         return None
+
+    if payload.get("type") != "access":
+        return None
+
+    return payload
+
+
+# ---------------------------------------------------------------------------
+# Refresh tokens
+# ---------------------------------------------------------------------------
+def create_refresh_token(data: dict) -> tuple[str, str, datetime]:
+    """
+    Create a long-lived refresh token.
+
+    Returns (raw_token, token_hash, expires_at) — the raw token goes to the
+    client, the hash is what you store in the `refresh_tokens` table.
+    Never store the raw token; a stolen DB row shouldn't be usable as a
+    live credential.
+    """
+    to_encode = data.copy()
+    expire = datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    jti = str(uuid.uuid4())
+
+    to_encode.update(
+        {
+            "exp": expire,
+            "iat": datetime.now(UTC),
+            "type": "refresh",
+            "jti": jti,
+        }
+    )
+
+    raw_token = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    token_hash = hash_token(raw_token)
+
+    return raw_token, token_hash, expire
+
+
+def decode_refresh_token(token: str) -> dict | None:
+    """Decode + validate a refresh token. Returns None if invalid, expired, or wrong type."""
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+    except JWTError:
+        return None
+
+    if payload.get("type") != "refresh":
+        return None
+
+    return payload
+
+
+def hash_token(raw_token: str) -> str:
+    """
+    SHA-256 hash of a raw token, for DB storage/lookup. Not a password hash
+    (no need for Argon2 here — the token itself already has ~256 bits of
+    entropy from the JWT signature+claims, we just need a fast, deterministic
+    lookup key, not brute-force resistance).
+    """
+    return hashlib.sha256(raw_token.encode()).hexdigest()

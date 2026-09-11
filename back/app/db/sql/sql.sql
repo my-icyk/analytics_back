@@ -53,3 +53,13 @@ CREATE TABLE api.role_permissions (
     REFERENCES api.permissions(id)
 	ON DELETE CASCADE
 );
+
+CREATE TABLE api.refresh_tokens (
+    id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES api.users(id),
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME2 NOT NULL,
+    created_at DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    revoked_at DATETIME2 NULL,
+    replaced_by BIGINT NULL REFERENCES api.refresh_tokens(id)
+);

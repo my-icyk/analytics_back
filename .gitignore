@@ -10,3 +10,8 @@ wheels/
 .venv
 .env
 testing/
+
+node_modules/
+dist/
+
+front/

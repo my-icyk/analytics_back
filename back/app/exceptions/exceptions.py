@@ -1,3 +1,19 @@
+class InvalidCredentialsError(Exception):
+    def __init__(self):
+        super().__init__("Invalid name or password")
+
+
+class InvalidTokenError(Exception):
+    def __init__(self):
+        super().__init__("Invalid or expired token")
+
+
+class InactiveUserError(Exception):
+    def __init__(self, user_id: int):
+        self.user_id = user_id
+        super().__init__(f"User {user_id} is inactive")
+
+
 class UserNotFoundError(Exception):
     def __init__(self, user_id: int):
         self.user_id = user_id
@@ -21,7 +37,7 @@ class NotFoundError(Exception):
         self,
         entity: str,
         field: str,
-        value: int,
+        value: str,
     ):
         self.entity = entity
         self.field = field
@@ -36,4 +52,11 @@ class AlreadyExistsError(Exception):
         self.field = field
         self.value = value
 
-        super().__init__(f"{entity} with {field}: {value} already exists")
+        super().__init__(f"{entity} with {field}: '{value}' already exists")
+
+
+class PasswordMismatchError(Exception):
+    def __init__(self):
+        super().__init__(
+            "Password must contain uppercase, lowercase, and digit characters"
+        )

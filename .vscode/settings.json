@@ -24,6 +24,10 @@
         }
     ],
     "python.analysis.extraPaths": [
-        "./back"
-    ]
+        "./back",
+        "./front"
+    ],
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.languageServerMode": "default",
+    "python.analysis.autoImportCompletions": true
 }

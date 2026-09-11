@@ -1,6 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-router = APIRouter()
+from app.api.deps import require_permission
+from app.core.permisions import PermissionEnum
+
+router = APIRouter(prefix="/health", tags=["health"])
 
 
 @router.get("/api")
@@ -9,18 +12,7 @@ def health():
 
 
 @router.get("/protected")
-def protected_health():
+def protected_health(
+    _=Depends(require_permission(PermissionEnum.SYSTEM_HEALTH_READ)),
+):
     return {"status": "success", "message": "api is working"}
-
-
-# @router.get("/db")
-# def db_health(code: str):
-#     if code != "now-you-see-me":
-#         raise HTTPException(status_code=403, detail="Invalid code")
-#     try:
-#         with engine.connect() as conn:
-#             conn.execute(text("SELECT 1"))
-#         return {"status": "success", "message": getpass.getuser()}
-
-#     except Exception:
-#         raise HTTPException(status_code=503, detail="db down")
