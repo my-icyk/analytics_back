@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -121,12 +121,17 @@ def get_authorization_service(
 # requirements
 def require_permission(permission: PermissionEnum):
     def permission_dependency(
-        token: str = Depends(oauth2_scheme),
+        token: str | None = Depends(oauth2_scheme),
         auth_service: AuthenticationService = Depends(get_auth_service),
         authorization_service: AuthorizationService = Depends(
             get_authorization_service
         ),
     ) -> int:
+        if token is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
         user_id = auth_service.authenticate_user(token)
 
         authorization_service.require_permission(
@@ -136,3 +141,10 @@ def require_permission(permission: PermissionEnum):
         return user_id
 
     return permission_dependency
+
+
+def get_current_user_id(
+    token: str = Depends(oauth2_scheme),
+    auth_service: AuthenticationService = Depends(get_auth_service),
+) -> int:
+    return auth_service.authenticate_user(token)

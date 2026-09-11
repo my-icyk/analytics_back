@@ -1,17 +1,39 @@
 from fastapi import APIRouter, Depends, status
 
 from app.api.deps import (
+    get_current_user_id,
     get_role_permission_service,
     get_user_service,
     require_permission,
 )
-from app.api.v1.schemas.users_schema import UserCreate, UserRead, UserUpdate
+from app.api.v1.schemas.users_schema import MyUser, UserCreate, UserRead, UserUpdate
 from app.core.permisions import PermissionEnum
 from app.schemas.role_schema import RoleRead
 from app.services.role_permission_service import RolePermissionService
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/me", response_model=MyUser)
+def get_me(
+    user_service: UserService = Depends(get_user_service),
+    role_permission_service: RolePermissionService = Depends(
+        get_role_permission_service
+    ),
+    user_id: int = Depends(get_current_user_id),
+):
+    user = user_service.get_user(user_id)
+    # TODO: De clarificat de ce nu se convertesc bine
+    roles = role_permission_service.get_roles_by_user_id(user_id)
+    permissions = role_permission_service.get_permissions_by_user_id(user_id)
+    return MyUser(
+        id=user.id,
+        username=user.username,
+        is_admin=user.is_admin,
+        roles=[role.name for role in roles],
+        permissions=[permission.name for permission in permissions],
+    )
 
 
 @router.get("/", response_model=list[UserRead])

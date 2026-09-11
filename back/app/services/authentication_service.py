@@ -92,6 +92,7 @@ class AuthenticationService:
             self.auth_repo.revoke(stored["id"])
 
     def authenticate_user(self, token: str) -> int:
+        """Return the user ID extracted from the access token."""
         payload = decode_access_token(token)
         if payload is None:
             raise InvalidTokenError()

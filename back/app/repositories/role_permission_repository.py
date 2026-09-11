@@ -42,3 +42,15 @@ class RolePermissionRepository(BaseRepository):
             sql, {"role_id": role_id, "permission_id": permission_id}
         )
         return row is not None
+
+    def get_permissions_by_user_id(self, user_id: int) -> list[Permission]:
+        sql = """
+            SELECT DISTINCT p.*
+            FROM api.user_roles AS ur
+            JOIN api.role_permissions AS rp ON ur.role_id = rp.role_id
+            JOIN api.permissions AS p ON rp.permission_id = p.id
+            WHERE
+                ur.user_id = :user_id
+        """
+        rows = self._fetch_all(sql, {"user_id": user_id})
+        return [Permission.model_validate(row) for row in rows]
