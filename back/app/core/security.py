@@ -6,6 +6,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from app.config import get_settings
+from app.exceptions.exceptions import PasswordMismatchError
 
 settings = get_settings()
 
@@ -41,9 +42,7 @@ def validate_password_strength(password: str) -> None:
     has_digit = any(c.isdigit() for c in password)
 
     if not (has_upper and has_lower and has_digit):
-        raise ValueError(
-            "Password must contain uppercase, lowercase, and digit characters"
-        )
+        raise PasswordMismatchError()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

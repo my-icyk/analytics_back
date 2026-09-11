@@ -7,7 +7,7 @@ from app.api.deps import get_auth_service
 from app.config import get_settings
 from app.exceptions.exceptions import InvalidTokenError
 from app.schemas.auth_schemas import LoginRequest, TokenResponse
-from app.services.auth_service import AuthService
+from app.services.authentication_service import AuthenticationService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
@@ -33,7 +33,7 @@ def _set_refresh_cookie(response: Response, token: str, expires_at: datetime) ->
 def login_for_swagger(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    service: AuthService = Depends(get_auth_service),
+    service: AuthenticationService = Depends(get_auth_service),
 ):
     """
     Form-encoded login, used only by Swagger UI's 'Authorize' button
@@ -53,7 +53,7 @@ def login_for_swagger(
 def login(
     payload: LoginRequest,
     response: Response,
-    service: AuthService = Depends(get_auth_service),
+    service: AuthenticationService = Depends(get_auth_service),
 ):
     access_token, refresh_token, expires_at = service.login(
         payload.username, payload.password
@@ -66,7 +66,7 @@ def login(
 def refresh(
     request: Request,
     response: Response,
-    service: AuthService = Depends(get_auth_service),
+    service: AuthenticationService = Depends(get_auth_service),
 ):
     raw_refresh = request.cookies.get(REFRESH_COOKIE_NAME)
     if raw_refresh is None:
@@ -81,7 +81,7 @@ def refresh(
 def logout(
     request: Request,
     response: Response,
-    service: AuthService = Depends(get_auth_service),
+    service: AuthenticationService = Depends(get_auth_service),
 ):
     raw_refresh = request.cookies.get(REFRESH_COOKIE_NAME)
     if raw_refresh:

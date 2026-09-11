@@ -8,8 +8,10 @@ from datetime import datetime
 from app.repositories.base import BaseRepository
 
 
-class AuthRepository(BaseRepository):
-    def create(self, user_id: int, token_hash: str, expires_at: datetime) -> dict:
+class AuthenticationRepository(BaseRepository):
+    def create(
+        self, user_id: int, token_hash: str, expires_at: datetime
+    ) -> dict | None:
         sql = """
             INSERT INTO api.refresh_tokens (user_id, token_hash, expires_at)
             OUTPUT INSERTED.id, INSERTED.user_id, INSERTED.token_hash,
@@ -17,7 +19,7 @@ class AuthRepository(BaseRepository):
                    INSERTED.revoked_at, INSERTED.replaced_by
             VALUES (:user_id, :token_hash, :expires_at)
         """
-        return self._fetch_one(
+        return self._fetch_one_or_none(
             sql,
             {"user_id": user_id, "token_hash": token_hash, "expires_at": expires_at},
         )
@@ -28,7 +30,7 @@ class AuthRepository(BaseRepository):
             FROM api.refresh_tokens
             WHERE token_hash = :token_hash
         """
-        return self._fetch_one(sql, {"token_hash": token_hash})
+        return self._fetch_one_or_none(sql, {"token_hash": token_hash})
 
     def revoke(self, token_id: int, replaced_by: int | None = None) -> None:
         sql = """

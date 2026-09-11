@@ -3,7 +3,7 @@ from datetime import date
 from pydantic import BaseModel, Field
 
 
-class CounterUpdateViewSchema(BaseModel):
+class CounterUpdateView(BaseModel):
     id: int
     start_date: date
     end_date: date | None
@@ -14,7 +14,7 @@ class CounterUpdateViewSchema(BaseModel):
 
 
 class CounterUpdateListResponse(BaseModel):
-    items: list[CounterUpdateViewSchema]
+    items: list[CounterUpdateView]
     next_cursor: int | None = None
 
 

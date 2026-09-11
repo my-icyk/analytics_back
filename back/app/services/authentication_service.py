@@ -5,46 +5,27 @@ security.py to implement login, refresh-token rotation, and logout.
 
 from datetime import datetime
 
-from app.core.permisions import PermissionEnum, has_permission
 from app.core.security import (
     create_access_token,
     create_refresh_token,
+    decode_access_token,
     decode_refresh_token,
-    get_password_hash,
     hash_token,
-    validate_password_strength,
     verify_password,
 )
 from app.exceptions.exceptions import (
-    ForbiddenError,
     InactiveUserError,
     InvalidCredentialsError,
     InvalidTokenError,
 )
-from app.models.user import User
-from app.repositories.auth_repository import AuthRepository
+from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.user_schemas import UserCreate
 
 
-class AuthService:
-    def __init__(self, user_repo: UserRepository, auth_repo: AuthRepository):
+class AuthenticationService:
+    def __init__(self, user_repo: UserRepository, auth_repo: AuthenticationRepository):
         self.user_repo = user_repo
         self.auth_repo = auth_repo
-
-    # -----------------------------------------------------------------
-    def create_user(self, data: UserCreate, current_user: User) -> User:
-        if not has_permission(current_user, PermissionEnum.USERS_CREATE):
-            raise ForbiddenError("You dont have permission to create a user.")
-        validate_password_strength(data.password)
-        hashed = get_password_hash(data.password)
-        user = self.user_repo.create(
-            username=data.username,
-            hashed_password=hashed,
-            is_admin=data.is_admin,
-        )
-        print(f"User created: {user}")
-        return user
 
     # -----------------------------------------------------------------
     def login(self, name: str, password: str) -> tuple[str, str, datetime]:
@@ -109,3 +90,14 @@ class AuthService:
         stored = self.auth_repo.get_by_hash(token_hash)
         if stored is not None and stored["revoked_at"] is None:
             self.auth_repo.revoke(stored["id"])
+
+    def authenticate_user(self, token: str) -> int:
+        payload = decode_access_token(token)
+        if payload is None:
+            raise InvalidTokenError()
+
+        user_id = payload.get("sub")
+        if user_id is None:
+            raise InvalidTokenError()
+
+        return user_id

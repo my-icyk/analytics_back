@@ -2,7 +2,7 @@ from datetime import date
 from typing import Any
 
 from app.config import get_settings
-from app.models.counter_update import CounterUpdate
+from app.domains.counter_update import CounterUpdate
 from app.repositories.base import BaseRepository
 
 settings = get_settings()
@@ -11,21 +11,12 @@ settings = get_settings()
 class CounterUpdateRepository(BaseRepository):
     def get_by_id(self, counter_update_id: int) -> CounterUpdate | None:
         sql = """
-            SELECT
-                id, 
-                start_date,
-                end_date,
-                id_counter,
-                amount,
-                auto,
-                comment
+            SELECT *
             FROM Adaugari.dbo.counters_update
             WHERE id = :id
         """
-        row = self._fetch_one(sql, {"id": counter_update_id})
-        if row is None:
-            return None
-        return CounterUpdate.model_validate(row)
+        row = self._fetch_one_or_none(sql, {"id": counter_update_id})
+        return CounterUpdate.model_validate(row) if row else None
 
     def get_all(
         self,
@@ -63,14 +54,7 @@ class CounterUpdateRepository(BaseRepository):
         where_sql = f"WHERE {' AND '.join(where)}" if where else ""
 
         sql = f"""
-            SELECT TOP (:limit)
-                id,
-                start_date,
-                end_date,
-                id_counter,
-                amount,
-                auto,
-                comment
+            SELECT TOP (:limit) *
             FROM Adaugari.dbo.counters_update
             {where_sql}
             ORDER BY id DESC
@@ -90,7 +74,7 @@ class CounterUpdateRepository(BaseRepository):
         amount: int,
         auto: bool,
         comment: str | None = None,
-    ):
+    ) -> None:
         sql = """
             INSERT INTO Adaugari.dbo.counters_update (
                 start_date,
@@ -99,7 +83,8 @@ class CounterUpdateRepository(BaseRepository):
                 amount,
                 auto,
                 comment
-            ) VALUES (
+            ) 
+            VALUES (
                 :start_date,
                 :end_date,
                 :id_counter,
@@ -128,7 +113,7 @@ class CounterUpdateRepository(BaseRepository):
         amount: int,
         auto: bool,
         comment: str | None = None,
-    ):
+    ) -> None:
         sql = """
             UPDATE Adaugari.dbo.counters_update
             SET
@@ -155,7 +140,7 @@ class CounterUpdateRepository(BaseRepository):
         self,
         *,
         counter_update_id: int,
-    ):
+    ) -> None:
         sql = """
             DELETE FROM Adaugari.dbo.counters_update
             WHERE id = :counter_update_id;

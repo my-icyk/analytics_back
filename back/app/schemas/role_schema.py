@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel
 
 
@@ -7,7 +5,6 @@ class RoleRead(BaseModel):
     id: int
     name: str
     description: str | None
-    created_at: datetime
 
 
 class RoleCreate(BaseModel):
@@ -16,5 +13,5 @@ class RoleCreate(BaseModel):
 
 
 class RoleUpdate(BaseModel):
-    name: str | None
+    name: str
     description: str | None

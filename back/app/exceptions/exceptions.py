@@ -53,3 +53,10 @@ class AlreadyExistsError(Exception):
         self.value = value
 
         super().__init__(f"{entity} with {field}: '{value}' already exists")
+
+
+class PasswordMismatchError(Exception):
+    def __init__(self):
+        super().__init__(
+            "Password must contain uppercase, lowercase, and digit characters"
+        )

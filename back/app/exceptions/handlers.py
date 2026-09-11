@@ -17,6 +17,7 @@ from app.exceptions.exceptions import (
     InvalidCredentialsError,
     InvalidTokenError,
     NotFoundError,
+    PasswordMismatchError,
     UserNotFoundError,
 )
 
@@ -79,3 +80,10 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(InactiveUserError)
     def inactive_user_handler(_request: Request, exc: InactiveUserError):
         return JSONResponse(status_code=403, content={"detail": str(exc)})
+
+    @app.exception_handler(PasswordMismatchError)
+    def password_mismatch_handler(_request: Request, exc: PasswordMismatchError):
+        return JSONResponse(
+            status_code=400,
+            content={"detail": str(exc)},
+        )

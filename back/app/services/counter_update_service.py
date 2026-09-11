@@ -1,49 +1,29 @@
-from app.core.permisions import PermissionEnum, user_has_permission
-from app.exceptions.exceptions import ForbiddenError, NotFoundError
-from app.models.counter_update import CounterUpdate
+from app.domains.counter_update import CounterUpdate
+from app.exceptions.exceptions import NotFoundError
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.schemas.counter_update_schema import (
     CountersUpdateCreate,
     CounterUpdateListQuery,
     CounterUpdateListResponse,
-    CounterUpdateViewSchema,
+    CounterUpdateView,
 )
-from app.schemas.user_schemas import MyUser
 
 
 class CounterUpdateService:
     def __init__(self, repo: CounterUpdateRepository):
         self.repository = repo
 
-    def get_by_id(self, counter_update_id: int, current_user: MyUser) -> CounterUpdate:
-        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_READ):
-            raise ForbiddenError("You do not have permission to read counter updates.")
+    def get_by_id(
+        self,
+        counter_update_id: int,
+    ) -> CounterUpdate:
         row = self.repository.get_by_id(counter_update_id)
         if row is None:
-            raise NotFoundError("counters_update", "id", counter_update_id)
+            raise NotFoundError("counters_update", "id", str(counter_update_id))
         return row
 
-    def get_all(
-        self, current_user: MyUser, query: CounterUpdateListQuery
-    ) -> CounterUpdateListResponse:
-        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_READ):
-            raise ForbiddenError("You do not have permission to read counter updates.")
-
-        items, next_cursor = self.repository.get_all(
-            **query.model_dump(exclude_none=True)
-        )
-        view_items = [
-            CounterUpdateViewSchema.model_validate(item, from_attributes=True)
-            for item in items
-        ]
-
-        return CounterUpdateListResponse(items=view_items, next_cursor=next_cursor)
-
-    def create(self, current_user: MyUser, data: CountersUpdateCreate):
-        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_CREATE):
-            raise ForbiddenError(
-                "You do not have permission to create counter updates."
-            )
+    def create(self, data: CountersUpdateCreate) -> None:
+        # TODO: NEED TO ADD VALIDATION
         self.repository.create(
             start_date=data.start_date,
             end_date=data.end_date,
@@ -53,13 +33,10 @@ class CounterUpdateService:
             comment=data.comment,
         )
 
-    def update(
-        self, current_user: MyUser, counter_update_id: int, data: CountersUpdateCreate
-    ):
-        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_UPDATE):
-            raise ForbiddenError(
-                "You do not have permission to update counter updates."
-            )
+    # TODO: dont like the schema CountersUpdateCreate poate se poate command sau altceva
+    def update(self, counter_update_id: int, data: CountersUpdateCreate) -> None:
+        self.get_by_id(counter_update_id)
+
         self.repository.update(
             counter_update_id=counter_update_id,
             start_date=data.start_date,
@@ -70,9 +47,20 @@ class CounterUpdateService:
             comment=data.comment,
         )
 
-    def delete(self, current_user: MyUser, counter_update_id: int):
-        if not user_has_permission(current_user, PermissionEnum.COUNTERS_UPDATE_DELETE):
-            raise ForbiddenError(
-                "You do not have permission to delete counter updates."
-            )
+    def delete(self, counter_update_id: int) -> None:
+        self.get_by_id(counter_update_id)
+
         self.repository.delete(counter_update_id=counter_update_id)
+
+    # TODO: dont like get all method
+    def get_all(self, query: CounterUpdateListQuery) -> CounterUpdateListResponse:
+
+        items, next_cursor = self.repository.get_all(
+            **query.model_dump(exclude_none=True)
+        )
+        view_items = [
+            CounterUpdateView.model_validate(item, from_attributes=True)
+            for item in items
+        ]
+
+        return CounterUpdateListResponse(items=view_items, next_cursor=next_cursor)
