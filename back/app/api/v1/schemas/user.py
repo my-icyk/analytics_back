@@ -1,8 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
-
-class Base(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+from app.api.v1.schemas.finance import Base
 
 
 class UserRead(Base):

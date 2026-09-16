@@ -6,7 +6,7 @@ from app.api.deps import (
     get_user_service,
     require_permission,
 )
-from app.api.v1.schemas.users_schema import MyUser, UserCreate, UserRead, UserUpdate
+from app.api.v1.schemas.user import MyUser, UserCreate, UserRead, UserUpdate
 from app.core.permisions import PermissionEnum
 from app.schemas.role_schema import RoleRead
 from app.services.role_permission_service import RolePermissionService

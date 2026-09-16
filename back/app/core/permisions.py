@@ -42,6 +42,26 @@ class PermissionEnum(StrEnum):
     PRODUCT_PRICES_READ = "product_prices:read"
     MANAGE_ADMIN_RIGHTS = "user:manage_admin"
 
+    FINANCE_DIVISION_CREATE = "finance:division:create"
+    FINANCE_DIVISION_READ = "finance:division:read"
+    FINANCE_DIVISION_UPDATE = "finance:division:update"
+    FINANCE_DIVISION_DELETE = "finance:division:delete"
+
+    FINANCE_GROUP_CREATE = "finance:group:create"
+    FINANCE_GROUP_READ = "finance:group:read"
+    FINANCE_GROUP_UPDATE = "finance:group:update"
+    FINANCE_GROUP_DELETE = "finance:group:delete"
+
+    FINANCE_RULE_CREATE = "finance:rule:create"
+    FINANCE_RULE_READ = "finance:rule:read"
+    FINANCE_RULE_UPDATE = "finance:rule:update"
+    FINANCE_RULE_DELETE = "finance:rule:delete"
+
+    FINANCE_RULE_TARGET_CREATE = "finance:rule_target:create"
+    FINANCE_RULE_TARGET_READ = "finance:rule_target:read"
+    FINANCE_RULE_TARGET_UPDATE = "finance:rule_target:update"
+    FINANCE_RULE_TARGET_DELETE = "finance:rule_target:delete"
+
 
 def has_permission(user: User, permission: PermissionEnum) -> bool:
     if user.is_admin:

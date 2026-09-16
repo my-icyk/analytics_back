@@ -7,6 +7,11 @@ from app.db.database import get_db
 from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.authorization_repository import AuthorizationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
+from app.repositories.division_repository import DivisionRepository
+from app.repositories.group_repository import GroupRepository
+from app.repositories.group_rule_repository import GroupRuleRepository
+from app.repositories.group_rule_target_repository import GroupRuleTargetRepository
+from app.repositories.group_type_repository import GroupTypeRepository
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_permission_repository import RolePermissionRepository
 from app.repositories.role_repository import RoleRepository
@@ -16,6 +21,8 @@ from app.repositories.user_role_repository import UserRoleRepository
 from app.services.authentication_service import AuthenticationService
 from app.services.authorization_service import AuthorizationService
 from app.services.counter_update_service import CounterUpdateService
+from app.services.finance_group_service import FinanceGroupService
+from app.services.finance_rule_service import FinanceRuleService
 from app.services.role_permission_service import RolePermissionService
 from app.services.specific_service import SpecificService
 from app.services.user_service import UserService
@@ -64,6 +71,28 @@ def get_role_permission_repository(
     db: Session = Depends(get_db),
 ) -> RolePermissionRepository:
     return RolePermissionRepository(db)
+
+
+def get_division_repository(db: Session = Depends(get_db)) -> DivisionRepository:
+    return DivisionRepository(db)
+
+
+def get_group_repository(db: Session = Depends(get_db)) -> GroupRepository:
+    return GroupRepository(db)
+
+
+def get_group_rule_repository(db: Session = Depends(get_db)) -> GroupRuleRepository:
+    return GroupRuleRepository(db)
+
+
+def get_group_rule_target_repository(
+    db: Session = Depends(get_db),
+) -> GroupRuleTargetRepository:
+    return GroupRuleTargetRepository(db)
+
+
+def get_group_type_repository(db: Session = Depends(get_db)) -> GroupTypeRepository:
+    return GroupTypeRepository(db)
 
 
 # Services
@@ -148,3 +177,31 @@ def get_current_user_id(
     auth_service: AuthenticationService = Depends(get_auth_service),
 ) -> int:
     return auth_service.authenticate_user(token)
+
+
+def get_finance_group_service(
+    group_type_repository: GroupTypeRepository = Depends(get_group_type_repository),
+    division_repository: DivisionRepository = Depends(get_division_repository),
+    group_repository: GroupRepository = Depends(get_group_repository),
+    group_rule_repository: GroupRuleRepository = Depends(get_group_rule_repository),
+) -> FinanceGroupService:
+    return FinanceGroupService(
+        group_type_repository=group_type_repository,
+        division_repository=division_repository,
+        group_repository=group_repository,
+        group_rule_repository=group_rule_repository,
+    )
+
+
+def get_finance_rule_service(
+    group_repository: GroupRepository = Depends(get_group_repository),
+    group_rule_repository: GroupRuleRepository = Depends(get_group_rule_repository),
+    group_rule_target_repository: GroupRuleTargetRepository = Depends(
+        get_group_rule_target_repository
+    ),
+) -> FinanceRuleService:
+    return FinanceRuleService(
+        group_repository=group_repository,
+        group_rule_repository=group_rule_repository,
+        group_rule_target_repository=group_rule_target_repository,
+    )

@@ -1,3 +1,6 @@
+from datetime import date
+
+
 class InvalidCredentialsError(Exception):
     def __init__(self):
         super().__init__("Invalid name or password")
@@ -59,4 +62,28 @@ class PasswordMismatchError(Exception):
     def __init__(self):
         super().__init__(
             "Password must contain uppercase, lowercase, and digit characters"
+        )
+
+
+class DeleteProtectedError(Exception):
+    def __init__(
+        self,
+        entity: str,
+        reason: str,
+    ):
+        self.entity = entity
+        self.reason = reason
+
+        super().__init__(f"{entity} cannot be deleted: {reason}")
+
+
+class OverlappingPeriodError(Exception):
+    def __init__(
+        self,
+        entity_name: str,
+        valid_from: date,
+        valid_to: date | None,
+    ):
+        super().__init__(
+            f"{entity_name} has an overlapping period: {valid_from} - {valid_to}"
         )

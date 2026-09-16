@@ -27,8 +27,8 @@ class BaseRepository:
         assert row is not None, "Expected exactly one row"
         return dict(row)
 
-    def _fetch_all(self, sql: str, params: dict[str, Any]) -> list[dict]:
-        rows = self.db.execute(text(sql), params).mappings().all()
+    def _fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict]:
+        rows = self.db.execute(text(sql), params or {}).mappings().all()
         return [dict(r) for r in rows]
 
     def _execute(self, sql: str, params: dict[str, Any]) -> None:

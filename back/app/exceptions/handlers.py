@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from app.exceptions.exceptions import (
     AlreadyExistsError,
+    DeleteProtectedError,
     ForbiddenError,
     InactiveUserError,
     InvalidCredentialsError,
@@ -83,6 +84,13 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(PasswordMismatchError)
     def password_mismatch_handler(_request: Request, exc: PasswordMismatchError):
+        return JSONResponse(
+            status_code=400,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(DeleteProtectedError)
+    def delete_protected_error_handler(_request: Request, exc: DeleteProtectedError):
         return JSONResponse(
             status_code=400,
             content={"detail": str(exc)},
