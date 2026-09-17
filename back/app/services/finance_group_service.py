@@ -1,4 +1,11 @@
-from app.domains.finance import Division, Group, GroupDetail, GroupType
+from app.domains.finance import (
+    Division,
+    Group,
+    GroupDetail,
+    GroupFilter,
+    GroupPage,
+    GroupType,
+)
 from app.exceptions.exceptions import (
     AlreadyExistsError,
     DeleteProtectedError,
@@ -8,6 +15,8 @@ from app.repositories.division_repository import DivisionRepository
 from app.repositories.group_repository import GroupRepository
 from app.repositories.group_rule_repository import GroupRuleRepository
 from app.repositories.group_type_repository import GroupTypeRepository
+
+# TODO: De exclus de aici
 
 
 class FinanceGroupService:
@@ -22,6 +31,11 @@ class FinanceGroupService:
         self.division_repository = division_repository
         self.group_repository = group_repository
         self.group_rule_repository = group_rule_repository
+
+    def get_groups_page(self, filters: GroupFilter) -> GroupPage:
+        items = self.group_repository.get_all(filters)
+        total = self.group_repository.count(filters)
+        return GroupPage(items=items, total=total)
 
     def _validate_group_name(self, name: str):
         group = self.group_repository.get_by_name(name)
@@ -71,8 +85,17 @@ class FinanceGroupService:
             raise NotFoundError("Group", "id", str(id))
         return group
 
-    def get_groups(self) -> list[GroupDetail]:
-        return self.group_repository.get_all()
+    def get_groups(
+        self,
+        filters: GroupFilter,
+    ) -> list[GroupDetail]:
+        return self.group_repository.get_all(filters)
+
+    def count_groups(
+        self,
+        filters: GroupFilter,
+    ) -> int:
+        return self.group_repository.count(filters)
 
     def create_group(
         self, name: str, group_type_id: int, division_id: int

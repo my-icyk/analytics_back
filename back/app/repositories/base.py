@@ -9,7 +9,7 @@ into plain dicts, ready to hand to a Pydantic schema.
 
 from typing import Any
 
-from sqlalchemy import text
+from sqlalchemy import bindparam, text
 from sqlalchemy.orm import Session
 
 
@@ -34,11 +34,34 @@ class BaseRepository:
     def _execute(self, sql: str, params: dict[str, Any]) -> None:
         self.db.execute(text(sql), params)
 
-    def _scalar(self, sql: str, params: dict[str, Any]) -> Any:
-        row = self.db.execute(text(sql), params).scalar()
-        return row
+    def _scalar(
+        self,
+        sql: str,
+        params: dict[str, Any] | None = None,
+        expanding: list[str] | None = None,
+    ) -> Any:
+        stmt = text(sql)
+        if expanding:
+            stmt = stmt.bindparams(
+                *[bindparam(name, expanding=True) for name in expanding]
+            )
+        return self.db.execute(stmt, params or {}).scalar()
 
     def _update(self, sql: str, params: dict[str, Any]) -> dict:
         row = self._fetch_one_or_none(sql, params)
         assert row is not None, "UPDATE with OUTPUT should always return a row"
         return dict(row)
+
+    def _fetch_some(
+        self,
+        sql: str,
+        params: dict[str, Any] | None = None,
+        expanding: list[str] | None = None,
+    ) -> list[dict]:
+        stmt = text(sql)
+        if expanding:
+            stmt = stmt.bindparams(
+                *[bindparam(name, expanding=True) for name in expanding]
+            )
+        rows = self.db.execute(stmt, params or {}).mappings().all()
+        return [dict(r) for r in rows]

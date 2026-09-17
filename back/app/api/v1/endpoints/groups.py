@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.api.deps import (
     get_finance_group_service,
     get_finance_rule_service,
     require_permission,
 )
+from app.api.v1.schemas.common import PaginatedResponse
 from app.api.v1.schemas.finance import (
     GroupCreate,
     GroupRead,
@@ -13,6 +14,7 @@ from app.api.v1.schemas.finance import (
     RuleRead,
 )
 from app.core.permisions import PermissionEnum
+from app.domains.finance import GroupFilter
 from app.services.finance_group_service import FinanceGroupService
 from app.services.finance_rule_service import FinanceRuleService
 
@@ -27,12 +29,33 @@ def get_group_types(
     return service.get_group_types()
 
 
-@router.get("", response_model=list[GroupRead])
+@router.get("", response_model=PaginatedResponse[GroupRead])
 def get_groups(
+    group_ids: list[int] | None = Query(None),
+    division_ids: list[int] | None = Query(None),
+    group_type_ids: list[int] | None = Query(None),
+    limit: int = Query(50, le=200, ge=1),
+    offset: int = Query(0, ge=0),
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
-    return service.get_groups()
+
+    filters = GroupFilter(
+        group_ids=group_ids,
+        division_ids=division_ids,
+        group_type_ids=group_type_ids,
+        limit=limit,
+        offset=offset,
+    )
+
+    page = service.get_groups_page(filters)
+
+    return PaginatedResponse(
+        items=page.items,
+        total=page.total,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get("/{id}", response_model=GroupRead)

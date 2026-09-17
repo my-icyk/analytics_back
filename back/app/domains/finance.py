@@ -8,6 +8,14 @@ class Division(DomainModel):
     name: str
 
 
+class GroupFilter(DomainModel):
+    group_ids: list[int] | None = None
+    division_ids: list[int] | None = None
+    group_type_ids: list[int] | None = None
+    limit: int = 50
+    offset: int = 0
+
+
 class GroupType(DomainModel):
     id: int
     name: str
@@ -25,6 +33,11 @@ class GroupDetail(DomainModel):
     name: str
     division: Division
     group_type: GroupType
+
+
+class GroupPage(DomainModel):
+    items: list[GroupDetail]
+    total: int
 
 
 class GroupRule(DomainModel):
