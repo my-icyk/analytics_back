@@ -1,11 +1,9 @@
-from app.domains.counter_update import CounterUpdate
+from app.domains.counter_update import CounterExceptions
 from app.exceptions.exceptions import NotFoundError
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.schemas.counter_update_schema import (
-    CountersUpdateCreate,
-    CounterUpdateListQuery,
-    CounterUpdateListResponse,
-    CounterUpdateView,
+    CounterExceptionsCreate,
+    CounterExceptionsUpdate,
 )
 
 
@@ -15,52 +13,46 @@ class CounterUpdateService:
 
     def get_by_id(
         self,
-        counter_update_id: int,
-    ) -> CounterUpdate:
-        row = self.repository.get_by_id(counter_update_id)
+        exception_id: int,
+    ) -> CounterExceptions:
+        row = self.repository.get_by_id(exception_id)
         if row is None:
-            raise NotFoundError("counters_update", "id", str(counter_update_id))
+            raise NotFoundError("counters_update", "id", str(exception_id))
         return row
 
-    def create(self, data: CountersUpdateCreate) -> None:
+    def create(self, data: CounterExceptionsCreate, user_id: int) -> None:
         # TODO: NEED TO ADD VALIDATION
         self.repository.create(
-            start_date=data.start_date,
-            end_date=data.end_date,
-            id_counter=data.id_counter,
-            amount=data.amount,
-            auto=data.auto,
-            comment=data.comment,
+            counter_id=data.counter_id,
+            valid_from=data.valid_from,
+            valid_to=data.valid_to,
+            visitors=data.visitors,
+            is_auto=data.is_auto,
+            reason=data.reason,
+            created_by_user_id=user_id,
         )
 
     # TODO: dont like the schema CountersUpdateCreate poate se poate command sau altceva
-    def update(self, counter_update_id: int, data: CountersUpdateCreate) -> None:
-        self.get_by_id(counter_update_id)
+    def update(self, exception_id: int, data: CounterExceptionsUpdate) -> None:
+        self.get_by_id(exception_id)
 
         self.repository.update(
-            counter_update_id=counter_update_id,
-            start_date=data.start_date,
-            end_date=data.end_date,
-            id_counter=data.id_counter,
-            amount=data.amount,
-            auto=data.auto,
-            comment=data.comment,
+            exception_id=exception_id,
+            counter_id=data.counter_id,
+            valid_from=data.valid_from,
+            valid_to=data.valid_to,
+            visitors=data.visitors,
+            is_auto=data.is_auto,
+            reason=data.reason,
         )
 
-    def delete(self, counter_update_id: int) -> None:
-        self.get_by_id(counter_update_id)
+    def delete(self, exception_id: int) -> None:
+        self.get_by_id(exception_id)
 
-        self.repository.delete(counter_update_id=counter_update_id)
+        self.repository.delete(exception_id=exception_id)
 
-    # TODO: dont like get all method
-    def get_all(self, query: CounterUpdateListQuery) -> CounterUpdateListResponse:
+    def get_counters(self):
+        return self.repository.get_counters()
 
-        items, next_cursor = self.repository.get_all(
-            **query.model_dump(exclude_none=True)
-        )
-        view_items = [
-            CounterUpdateView.model_validate(item, from_attributes=True)
-            for item in items
-        ]
-
-        return CounterUpdateListResponse(items=view_items, next_cursor=next_cursor)
+    def get_by_counter_id(self, counter_id: int) -> list[CounterExceptions]:
+        return self.repository.get_by_counter_id(counter_id)

@@ -1,151 +1,165 @@
 from datetime import date
-from typing import Any
 
 from app.config import get_settings
-from app.domains.counter_update import CounterUpdate
+from app.domains.counter_update import CounterExceptions, Counters
 from app.repositories.base import BaseRepository
 
 settings = get_settings()
 
 
 class CounterUpdateRepository(BaseRepository):
-    def get_by_id(self, counter_update_id: int) -> CounterUpdate | None:
+    def get_by_id(self, counter_update_id: int) -> CounterExceptions | None:
         sql = """
-            SELECT *
-            FROM Adaugari.dbo.counters_update
-            WHERE id = :id
+            SELECT 
+                main.id,
+                main.counter_id,
+                main.valid_from,
+                main.valid_to,
+                main.visitors,
+                main.is_auto,
+                main.reason,
+                created_by = users.username,
+                main.created_at,
+                main.updated_at
+            FROM testing_db.params.counter_exceptions AS main
+            LEFT JOIN testing_db.api.users ON users.id = main.created_by_user_id
+            WHERE
+                main.id = :counter_update_id
+            ORDER BY
+                main.updated_at DESC
         """
-        row = self._fetch_one_or_none(sql, {"id": counter_update_id})
-        return CounterUpdate.model_validate(row) if row else None
-
-    def get_all(
-        self,
-        *,
-        cursor_id: int | None = None,
-        id_counter: int | None = None,
-        auto: bool | None = None,
-        start_date_from: date | None = None,
-        start_date_to: date | None = None,
-    ) -> tuple[list[CounterUpdate], int | None]:
-        limit = settings.PAGE_LIMIT
-
-        where = []
-        params: dict[str, Any] = {"limit": limit}
-        if cursor_id is not None:
-            where.append("id < :cursor_id")
-            params["cursor_id"] = cursor_id
-
-        if id_counter is not None:
-            where.append("id_counter = :id_counter")
-            params["id_counter"] = id_counter
-
-        if auto is not None:
-            where.append("auto = :auto")
-            params["auto"] = auto
-
-        if start_date_from is not None:
-            where.append("start_date >= :start_date_from")
-            params["start_date_from"] = start_date_from
-
-        if start_date_to is not None:
-            where.append("start_date <= :start_date_to")
-            params["start_date_to"] = start_date_to
-
-        where_sql = f"WHERE {' AND '.join(where)}" if where else ""
-
-        sql = f"""
-            SELECT TOP (:limit) *
-            FROM Adaugari.dbo.counters_update
-            {where_sql}
-            ORDER BY id DESC
-        """
-
-        rows = self._fetch_all(sql, params)
-        items = [CounterUpdate.model_validate(row) for row in rows]
-        next_cursor = items[-1].id if len(items) == limit else None
-        return items, next_cursor
+        row = self._fetch_one_or_none(sql, {"counter_update_id": counter_update_id})
+        return CounterExceptions.model_validate(row) if row else None
 
     def create(
         self,
         *,
-        start_date: date,
-        end_date: date,
-        id_counter: int,
-        amount: int,
-        auto: bool,
-        comment: str | None = None,
+        counter_id: int,
+        valid_from: date,
+        valid_to: date,
+        is_auto: bool,
+        visitors: int,
+        reason: str | None = None,
+        created_by_user_id: int,
     ) -> None:
         sql = """
-            INSERT INTO Adaugari.dbo.counters_update (
-                start_date,
-                end_date,
-                id_counter,
-                amount,
-                auto,
-                comment
+            INSERT INTO testing_db.params.counter_exceptions (
+                counter_id,
+                valid_from,
+                valid_to,
+                visitors,
+                is_auto,
+                reason,
+                created_by_user_id
             ) 
             VALUES (
-                :start_date,
-                :end_date,
-                :id_counter,
-                :amount,
-                :auto,
-                :comment
+                :counter_id,
+                :valid_from,
+                :valid_to,
+                :visitors,
+                :is_auto,
+                :reason,
+                :created_by_user_id
             );
         """
         params = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "id_counter": id_counter,
-            "amount": amount,
-            "auto": auto,
-            "comment": comment,
+            "counter_id": counter_id,
+            "valid_from": valid_from,
+            "valid_to": valid_to,
+            "visitors": visitors,
+            "is_auto": is_auto,
+            "reason": reason,
+            "created_by_user_id": created_by_user_id,
         }
         self._execute(sql, params)
 
     def update(
         self,
         *,
-        counter_update_id: int,
-        start_date: date,
-        end_date: date,
-        id_counter: int,
-        amount: int,
-        auto: bool,
-        comment: str | None = None,
+        exception_id: int,
+        counter_id: int,
+        valid_from: date,
+        valid_to: date,
+        visitors: int,
+        is_auto: bool,
+        reason: str | None = None,
     ) -> None:
         sql = """
-            UPDATE Adaugari.dbo.counters_update
+            UPDATE testing_db.params.counter_exceptions
             SET
-                start_date = :start_date,
-                end_date = :end_date,
-                id_counter = :id_counter,
-                amount = :amount,
-                auto = :auto,
-                comment = :comment
-            WHERE id = :counter_update_id;
+                counter_id = :counter_id,
+                valid_from = :valid_from,
+                valid_to = :valid_to,
+                visitors = :visitors,
+                is_auto = :is_auto,
+                reason = :reason,
+                updated_at = GETDATE()
+            WHERE id = :exception_id;
         """
         params = {
-            "counter_update_id": counter_update_id,
-            "start_date": start_date,
-            "end_date": end_date,
-            "id_counter": id_counter,
-            "amount": amount,
-            "auto": auto,
-            "comment": comment,
+            "exception_id": exception_id,
+            "counter_id": counter_id,
+            "valid_from": valid_from,
+            "valid_to": valid_to,
+            "visitors": visitors,
+            "is_auto": is_auto,
+            "reason": reason,
         }
         self._execute(sql, params)
 
     def delete(
         self,
         *,
-        counter_update_id: int,
+        exception_id: int,
     ) -> None:
         sql = """
-            DELETE FROM Adaugari.dbo.counters_update
-            WHERE id = :counter_update_id;
+            DELETE FROM testing_db.params.counter_exceptions
+            WHERE id = :exception_id;
         """
         params = {
-            "counter_update_id": counter_update_id,
+            "exception_id": exception_id,
         }
         self._execute(sql, params)
+
+    def get_counters(self) -> list[Counters]:
+        sql = """
+            SELECT
+                id = counter_id,
+                exception_count = COUNT(*),
+                last_change = MAX(updated_at)
+            FROM testing_db.params.counter_exceptions
+            GROUP BY
+                counter_id
+            ORDER BY
+                MAX(updated_at) DESC
+        """
+
+        rows = self._fetch_all(sql, {})
+        return [Counters.model_validate(row) for row in rows]
+
+    def get_by_counter_id(self, counter_id: int) -> list[CounterExceptions]:
+        sql = """
+            SELECT 
+                main.id,
+                main.counter_id,
+                main.valid_from,
+                main.valid_to,
+                main.visitors,
+                main.is_auto,
+                main.reason,
+                created_by = users.username,
+                main.created_at,
+                main.updated_at
+            FROM testing_db.params.counter_exceptions AS main
+            LEFT JOIN testing_db.api.users ON users.id = main.created_by_user_id
+            WHERE
+                counter_id = :counter_id
+            ORDER BY
+                main.updated_at DESC
+        """
+
+        params = {
+            "counter_id": counter_id,
+        }
+        rows = self._fetch_all(sql, params)
+        return [CounterExceptions.model_validate(row) for row in rows]

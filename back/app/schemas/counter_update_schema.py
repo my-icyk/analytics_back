@@ -1,35 +1,36 @@
-from datetime import date
+from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
-class CounterUpdateView(BaseModel):
+class CountersRead(BaseModel):
     id: int
-    start_date: date
-    end_date: date | None
-    id_counter: int
-    amount: int
-    auto: bool
-    comment: str | None
+    exception_count: int
+    last_change: datetime
 
 
-class CounterUpdateListResponse(BaseModel):
-    items: list[CounterUpdateView]
-    next_cursor: int | None = None
+class CounterExceptionsView(BaseModel):
+    id: int
+    counter_id: int
+    valid_from: date
+    valid_to: date
+    visitors: int
+    is_auto: bool
+    reason: str | None = None
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
 
 
-class CounterUpdateListQuery(BaseModel):
-    cursor_id: int | None = Field(default=None, ge=1)
-    id_counter: int | None = Field(default=None, ge=1)
-    auto: bool | None = None
-    start_date_from: date | None = None
-    start_date_to: date | None = None
+# TODO: Actions must be provides in other places?
+class CounterExceptionsCreate(BaseModel):
+    counter_id: int
+    valid_from: date
+    valid_to: date
+    visitors: int
+    is_auto: bool
+    reason: str | None = None
 
 
-class CountersUpdateCreate(BaseModel):
-    start_date: date
-    end_date: date
-    id_counter: int
-    amount: int = 0
-    auto: bool
-    comment: str | None = None
+class CounterExceptionsUpdate(CounterExceptionsCreate):
+    pass

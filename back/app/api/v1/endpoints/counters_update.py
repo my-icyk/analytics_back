@@ -3,59 +3,72 @@ from fastapi import APIRouter, Depends, status
 from app.api.deps import get_counter_update_service, require_permission
 from app.core.permisions import PermissionEnum
 from app.schemas.counter_update_schema import (
-    CountersUpdateCreate,
-    CounterUpdateListQuery,
-    CounterUpdateListResponse,
-    CounterUpdateView,
+    CounterExceptionsCreate,
+    CounterExceptionsUpdate,
+    CounterExceptionsView,
+    CountersRead,
 )
 from app.services.counter_update_service import CounterUpdateService
 
-router = APIRouter(prefix="/counter-updates", tags=["counter-updates"])
+counter_router = APIRouter(prefix="/counters", tags=["counters"])
 
 
-@router.get("", response_model=CounterUpdateListResponse)
-def get_all(
-    query: CounterUpdateListQuery = Depends(),
+@counter_router.get("", response_model=list[CountersRead])
+def get_counters(
     service: CounterUpdateService = Depends(get_counter_update_service),
     _=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_READ)),
 ):
-    return service.get_all(query)
+    return service.get_counters()
 
 
-@router.get("/{counter_update_id}", response_model=CounterUpdateView)
+@counter_router.get(
+    "/{counter_id}/exceptions", response_model=list[CounterExceptionsView]
+)
+def get_by_counter_id(
+    counter_id: int,
+    service: CounterUpdateService = Depends(get_counter_update_service),
+    _=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_READ)),
+):
+    return service.get_by_counter_id(counter_id)
+
+
+exceptions_router = APIRouter(prefix="/counter-exceptions", tags=["counters"])
+
+
+@exceptions_router.get("/{exception_id}", response_model=CounterExceptionsView)
 def get_by_id(
-    counter_update_id: int,
+    exception_id: int,
     service: CounterUpdateService = Depends(get_counter_update_service),
     _=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_READ)),
 ):
-    return service.get_by_id(counter_update_id=counter_update_id)
+    return service.get_by_id(exception_id=exception_id)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@exceptions_router.post("", status_code=status.HTTP_201_CREATED)
 def create(
-    data: CountersUpdateCreate,
+    data: CounterExceptionsCreate,
     service: CounterUpdateService = Depends(get_counter_update_service),
-    _=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_CREATE)),
+    user_id=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_CREATE)),
 ):
 
-    service.create(data)
+    service.create(data, user_id=user_id)
 
 
-@router.put("/{counter_update_id}", status_code=status.HTTP_204_NO_CONTENT)
+@exceptions_router.put("/{exception_id}", status_code=status.HTTP_204_NO_CONTENT)
 def update(
-    counter_update_id: int,
-    data: CountersUpdateCreate,
+    exception_id: int,
+    data: CounterExceptionsUpdate,
     service: CounterUpdateService = Depends(get_counter_update_service),
     _=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_UPDATE)),
 ):
 
-    service.update(counter_update_id, data)
+    service.update(exception_id, data)
 
 
-@router.delete("/{counter_update_id}", status_code=status.HTTP_204_NO_CONTENT)
+@exceptions_router.delete("/{exception_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete(
-    counter_update_id: int,
+    exception_id: int,
     service: CounterUpdateService = Depends(get_counter_update_service),
     _=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_DELETE)),
 ):
-    service.delete(counter_update_id)
+    service.delete(exception_id)

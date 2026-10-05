@@ -1,13 +1,22 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
 
-class CounterUpdate(BaseModel):
+class Counters(BaseModel):
     id: int
-    start_date: date
-    end_date: date | None
-    id_counter: int
-    amount: int | None
-    auto: bool
-    comment: str | None
+    exception_count: int
+    last_change: datetime
+
+
+class CounterExceptions(BaseModel):
+    id: int
+    counter_id: int
+    valid_from: date
+    valid_to: date
+    visitors: int
+    is_auto: bool
+    reason: str | None = None
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
