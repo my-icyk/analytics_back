@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, status
 from app.api.deps import get_finance_group_service, require_permission
 from app.api.v1.schemas.finance import (
     DivisionCreate,
+    DivisionDetails,
     DivisionRead,
     DivisionUpdate,
 )
@@ -12,7 +13,7 @@ from app.services.finance_group_service import FinanceGroupService
 router = APIRouter(prefix="/divisions")
 
 
-@router.get("", response_model=list[DivisionRead])
+@router.get("", response_model=list[DivisionDetails])
 def get_divisions(
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_DIVISION_READ)),
@@ -29,7 +30,7 @@ def create_division(
     return service.create_division(payload.name)
 
 
-@router.put("/{division_id}", response_model=DivisionRead)
+@router.put("/{division_id}", response_model=DivisionDetails)
 def update_division(
     division_id: int,
     payload: DivisionUpdate,

@@ -6,6 +6,11 @@ from app.domains.domain_model import DomainModel
 class Division(DomainModel):
     id: int
     name: str
+
+
+class DivisionDetail(DomainModel):
+    id: int
+    name: str
     group_count: int
 
 

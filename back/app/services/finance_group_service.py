@@ -4,6 +4,7 @@ from app.domains.finance import (
     Deparments,
     DepartmentRepartition,
     Division,
+    DivisionDetail,
     Group,
     GroupDetail,
     GroupFilter,
@@ -67,10 +68,10 @@ class FinanceGroupService:
     def get_group_types(self) -> list[GroupType]:
         return self.group_type_repository.get_all()
 
-    def get_divisions(self) -> list[Division]:
+    def get_divisions(self) -> list[DivisionDetail]:
         return self.division_repository.get_all()
 
-    def get_division(self, id: int) -> Division:
+    def get_division(self, id: int) -> DivisionDetail:
         division = self.division_repository.get_by_id(id)
         if not division:
             raise NotFoundError("Division", "id", str(id))

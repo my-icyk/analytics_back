@@ -1,9 +1,9 @@
-from app.domains.finance import Division
+from app.domains.finance import Division, DivisionDetail
 from app.repositories.base import BaseRepository
 
 
 class DivisionRepository(BaseRepository):
-    def get_by_id(self, division_id) -> Division | None:
+    def get_by_id(self, division_id) -> DivisionDetail | None:
 
         sql = """
             SELECT
@@ -22,9 +22,9 @@ class DivisionRepository(BaseRepository):
                 d.id
         """
         result = self._fetch_one_or_none(sql, {"division_id": division_id})
-        return Division.model_validate(result) if result else None
+        return DivisionDetail.model_validate(result) if result else None
 
-    def get_by_name(self, name) -> Division | None:
+    def get_by_name(self, name) -> DivisionDetail | None:
 
         sql = """
             SELECT
@@ -43,9 +43,9 @@ class DivisionRepository(BaseRepository):
                 d.id
         """
         result = self._fetch_one_or_none(sql, {"name": name})
-        return Division.model_validate(result) if result else None
+        return DivisionDetail.model_validate(result) if result else None
 
-    def get_all(self) -> list[Division]:
+    def get_all(self) -> list[DivisionDetail]:
 
         sql = """
             SELECT
@@ -62,7 +62,7 @@ class DivisionRepository(BaseRepository):
                 d.id
         """
         results = self._fetch_all(sql)
-        return [Division.model_validate(result) for result in results]
+        return [DivisionDetail.model_validate(result) for result in results]
 
     def create(self, name: str) -> Division:
 
