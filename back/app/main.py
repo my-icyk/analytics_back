@@ -27,6 +27,8 @@ origins = [
     "http://localhost:4173",  # CRA (if used)
     "http://analytics.local:8081",
     "http://172.28.130.61:5173",
+    "http://192.168.100.11:5173",
+    "http://172.28.130.61:4173",
 ]
 
 app.add_middleware(
