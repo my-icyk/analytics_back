@@ -9,7 +9,7 @@ class DivisionRepository(BaseRepository):
             SELECT
                 d.id,
                 d.name,
-                group_count = count(G.id)
+                group_count = count(g.id)
             FROM finance.dimDivision AS d
             LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
             WHERE
@@ -30,7 +30,7 @@ class DivisionRepository(BaseRepository):
             SELECT
                 d.id,
                 d.name,
-                group_count = count(G.id)
+                group_count = count(g.id)
             FROM finance.dimDivision AS d
             LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
             WHERE
@@ -51,7 +51,7 @@ class DivisionRepository(BaseRepository):
             SELECT
                 d.id,
                 d.name,
-                group_count = count(G.id)
+                group_count = count(g.id)
             FROM finance.dimDivision AS d
             LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
             GROUP BY
