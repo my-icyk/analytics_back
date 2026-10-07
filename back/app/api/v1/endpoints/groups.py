@@ -12,7 +12,7 @@ from app.api.v1.schemas.finance import (
     DepartmentRepartitionRead,
     GroupCreate,
     GroupRead,
-    GroupTypeRead,
+    GroupTypeDetails,
     GroupUpdate,
     RuleRead,
 )
@@ -32,7 +32,7 @@ def get_departments(
     return service.get_departments()
 
 
-@router.get("/types", response_model=list[GroupTypeRead])
+@router.get("/types", response_model=list[GroupTypeDetails])
 def get_group_types(
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),

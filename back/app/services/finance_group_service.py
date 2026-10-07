@@ -1,5 +1,6 @@
 from datetime import date
 
+from app.api.v1.schemas.finance import GroupTypeDetails
 from app.domains.finance import (
     Deparments,
     DepartmentRepartition,
@@ -9,7 +10,6 @@ from app.domains.finance import (
     GroupDetail,
     GroupFilter,
     GroupPage,
-    GroupType,
 )
 from app.exceptions.exceptions import (
     AlreadyExistsError,
@@ -65,7 +65,7 @@ class FinanceGroupService:
         if not existing_division:
             raise NotFoundError("Division", "id", str(division_id))
 
-    def get_group_types(self) -> list[GroupType]:
+    def get_group_types(self) -> list[GroupTypeDetails]:
         return self.group_type_repository.get_all()
 
     def get_divisions(self) -> list[DivisionDetail]:

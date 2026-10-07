@@ -29,6 +29,10 @@ class GroupTypeRead(Base):
     name: str
 
 
+class GroupTypeDetails(GroupTypeRead):
+    group_count: int
+
+
 class GroupRead(Base):
     id: int
     name: str
