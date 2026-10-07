@@ -30,7 +30,8 @@ def create_division(
     return service.create_division(payload.name)
 
 
-@router.put("/{division_id}", response_model=DivisionDetails)
+# TODO: Remove response model from update and create
+@router.put("/{division_id}", response_model=DivisionRead)
 def update_division(
     division_id: int,
     payload: DivisionUpdate,
