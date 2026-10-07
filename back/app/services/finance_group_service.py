@@ -9,6 +9,7 @@ from app.domains.finance import (
     Group,
     GroupDetail,
     GroupFilter,
+    GroupLookup,
     GroupPage,
 )
 from app.exceptions.exceptions import (
@@ -186,3 +187,8 @@ class FinanceGroupService:
 
     def get_departments(self) -> list[Deparments]:
         return self.department_repartition_repository.get_departments()
+
+    def lookup_groups(
+        self, search: str | None = None, limit: int = 10
+    ) -> list[GroupLookup]:
+        return self.group_repository.lookup(search, limit)

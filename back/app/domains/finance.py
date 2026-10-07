@@ -51,6 +51,11 @@ class GroupDetail(DomainModel):
     group_type: GroupType
 
 
+class GroupLookup(DomainModel):
+    id: int
+    description: str
+
+
 class GroupPage(DomainModel):
     items: list[GroupDetail]
     total: int

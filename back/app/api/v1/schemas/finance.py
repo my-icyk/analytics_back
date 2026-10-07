@@ -52,6 +52,11 @@ class GroupUpdate(Base):
     group_type_id: int
 
 
+class GroupLookup(Base):
+    id: int
+    description: str
+
+
 class RuleRead(Base):
     id: int
     name: str

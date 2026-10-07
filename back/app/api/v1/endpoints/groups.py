@@ -11,6 +11,7 @@ from app.api.v1.schemas.finance import (
     DepartmentRepartitionCreate,
     DepartmentRepartitionRead,
     GroupCreate,
+    GroupLookup,
     GroupRead,
     GroupTypeDetails,
     GroupUpdate,
@@ -38,6 +39,16 @@ def get_group_types(
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
     return service.get_group_types()
+
+
+@router.get("/lookup", response_model=list[GroupLookup])
+def lookup_groups(
+    search: str | None = Query(None),
+    limit: int = Query(10, le=50, ge=1),
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
+):
+    return service.lookup_groups(search, limit)
 
 
 @router.get("", response_model=PaginatedResponse[GroupRead])
