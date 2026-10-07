@@ -7,11 +7,19 @@ class DivisionRepository(BaseRepository):
 
         sql = """
             SELECT
-                id,
-                name
-            FROM finance.dimDivision
+                d.id,
+                d.name,
+                group_count = count(G.id)
+            FROM finance.dimDivision AS d
+            LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
             WHERE
-                id = :division_id
+                d.id = :division_id
+            GROUP BY
+                d.id,
+                d.name
+            ORDER BY
+                d.name,
+                d.id
         """
         result = self._fetch_one_or_none(sql, {"division_id": division_id})
         return Division.model_validate(result) if result else None
@@ -20,11 +28,19 @@ class DivisionRepository(BaseRepository):
 
         sql = """
             SELECT
-                id,
-                name
-            FROM finance.dimDivision
+                d.id,
+                d.name,
+                group_count = count(G.id)
+            FROM finance.dimDivision AS d
+            LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
             WHERE
-                name = :name
+                d.name = :name
+            GROUP BY
+                d.id,
+                d.name
+            ORDER BY
+                d.name,
+                d.id
         """
         result = self._fetch_one_or_none(sql, {"name": name})
         return Division.model_validate(result) if result else None
@@ -33,9 +49,17 @@ class DivisionRepository(BaseRepository):
 
         sql = """
             SELECT
-                id,
-                name
-            FROM finance.dimDivision
+                d.id,
+                d.name,
+                group_count = count(G.id)
+            FROM finance.dimDivision AS d
+            LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
+            GROUP BY
+                d.id,
+                d.name
+            ORDER BY
+                d.name,
+                d.id
         """
         results = self._fetch_all(sql)
         return [Division.model_validate(result) for result in results]

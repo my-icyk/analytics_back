@@ -10,6 +10,7 @@ class Base(BaseModel):
 class DivisionRead(Base):
     id: int
     name: str
+    group_count: int
 
 
 class DivisionCreate(Base):
