@@ -89,3 +89,31 @@ class TargetUpdate(Base):
     group_id: int
     allocation_type: str
     percent_value: float | None
+
+
+class DepartmentRepartitionRead(Base):
+    id: int
+    department_id: int
+    department_code: str
+    department_name: str
+    group_id: int
+    valid_from: date
+    valid_to: date | None
+
+
+class DepartmentRepartitionCreate(Base):
+    department_id: int
+    valid_from: date
+    valid_to: date | None
+
+
+class DepartmentRepartitionUpdate(Base):
+    department_id: int
+    valid_from: date
+    valid_to: date | None
+
+
+class DepartmentRead(Base):
+    id: int
+    code: str
+    name: str

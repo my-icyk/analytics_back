@@ -163,3 +163,50 @@ class CounterUpdateRepository(BaseRepository):
         }
         rows = self._fetch_all(sql, params)
         return [CounterExceptions.model_validate(row) for row in rows]
+
+    def get_all(
+        self, counter_id: int | None = None, limit: int = 50, offset: int = 0
+    ) -> list[CounterExceptions]:
+        sql = """
+            SELECT
+                main.id,
+                main.counter_id,
+                main.valid_from,
+                main.valid_to,
+                main.visitors,
+                main.is_auto,
+                main.reason,
+                created_by = users.username,
+                main.created_at,
+                main.updated_at
+            FROM testing_db.params.counter_exceptions AS main
+            LEFT JOIN testing_db.api.users ON users.id = main.created_by_user_id
+            WHERE
+                (:counter_id IS NULL OR main.counter_id = :counter_id)
+            ORDER BY
+                main.updated_at DESC,
+                main.id
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+        """
+
+        params = {
+            "counter_id": counter_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        rows = self._fetch_all(sql, params)
+        return [CounterExceptions.model_validate(row) for row in rows]
+
+    def count(self, counter_id: int | None = None) -> int:
+        sql = """
+            SELECT
+                COUNT(*)
+            FROM testing_db.params.counter_exceptions AS main
+            WHERE
+                (:counter_id IS NULL OR main.counter_id = :counter_id)
+        """
+
+        params = {
+            "counter_id": counter_id,
+        }
+        return self._scalar(sql, params)

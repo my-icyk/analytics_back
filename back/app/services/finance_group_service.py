@@ -1,4 +1,8 @@
+from datetime import date
+
 from app.domains.finance import (
+    Deparments,
+    DepartmentRepartition,
     Division,
     Group,
     GroupDetail,
@@ -11,6 +15,7 @@ from app.exceptions.exceptions import (
     DeleteProtectedError,
     NotFoundError,
 )
+from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
 from app.repositories.group_repository import GroupRepository
 from app.repositories.group_rule_repository import GroupRuleRepository
@@ -26,11 +31,13 @@ class FinanceGroupService:
         division_repository: DivisionRepository,
         group_repository: GroupRepository,
         group_rule_repository: GroupRuleRepository,
+        department_repartition_repository: DepartmentRepartitionRepository,
     ):
         self.group_type_repository = group_type_repository
         self.division_repository = division_repository
         self.group_repository = group_repository
         self.group_rule_repository = group_rule_repository
+        self.department_repartition_repository = department_repartition_repository
 
     def get_groups_page(self, filters: GroupFilter) -> GroupPage:
         items = self.group_repository.get_all(filters)
@@ -145,3 +152,36 @@ class FinanceGroupService:
                 f'Division "{self.get_division(id).name}" has associated groups',
             )
         self.division_repository.delete(id)
+
+    def get_department_repartition(self, group_id: int) -> list[DepartmentRepartition]:
+        self.get_group(group_id)
+        return self.department_repartition_repository.get_by_group_id(group_id)
+
+    def create_department_repartition(
+        self, department_id: int, group_id: int, valid_from: date, valid_to: date | None
+    ) -> DepartmentRepartition:
+        self.get_group(group_id)
+        repartition = self.department_repartition_repository.create(
+            department_id, group_id, valid_from, valid_to
+        )
+        return repartition
+
+    def update_department_repartition(
+        self,
+        id: int,
+        department_id: int,
+        group_id: int,
+        valid_from: date,
+        valid_to: date | None,
+    ) -> DepartmentRepartition:
+        self.get_group(group_id)
+        repartition = self.department_repartition_repository.update(
+            id, department_id, group_id, valid_from, valid_to
+        )
+        return repartition
+
+    def delete_department_repartition(self, id: int) -> None:
+        self.department_repartition_repository.delete(id)
+
+    def get_departments(self) -> list[Deparments]:
+        return self.department_repartition_repository.get_departments()

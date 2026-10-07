@@ -7,6 +7,9 @@ from app.api.deps import (
 )
 from app.api.v1.schemas.common import PaginatedResponse
 from app.api.v1.schemas.finance import (
+    DepartmentRead,
+    DepartmentRepartitionCreate,
+    DepartmentRepartitionRead,
     GroupCreate,
     GroupRead,
     GroupTypeRead,
@@ -21,6 +24,14 @@ from app.services.finance_rule_service import FinanceRuleService
 router = APIRouter(prefix="/groups")
 
 
+@router.get("/departments", response_model=list[DepartmentRead])
+def get_departments(
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_DEPARTMENT_REPARTITION_READ)),
+):
+    return service.get_departments()
+
+
 @router.get("/types", response_model=list[GroupTypeRead])
 def get_group_types(
     service: FinanceGroupService = Depends(get_finance_group_service),
@@ -31,7 +42,7 @@ def get_group_types(
 
 @router.get("", response_model=PaginatedResponse[GroupRead])
 def get_groups(
-    group_ids: list[int] | None = Query(None),
+    search: str | None = Query(None),
     division_ids: list[int] | None = Query(None),
     group_type_ids: list[int] | None = Query(None),
     limit: int = Query(50, le=200, ge=1),
@@ -41,7 +52,7 @@ def get_groups(
 ):
 
     filters = GroupFilter(
-        group_ids=group_ids,
+        search=search,
         division_ids=division_ids,
         group_type_ids=group_type_ids,
         limit=limit,
@@ -67,7 +78,11 @@ def get_group(
     return service.get_group(id)
 
 
-@router.post("", response_model=GroupRead)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    response_model=GroupRead,
+)
 def create_group(
     payload: GroupCreate,
     service: FinanceGroupService = Depends(get_finance_group_service),
@@ -106,3 +121,28 @@ def get_rules(
     _=Depends(require_permission(PermissionEnum.FINANCE_RULE_READ)),
 ):
     return service.get_rules_by_group_id(id)
+
+
+@router.get("/{id}/departments", response_model=list[DepartmentRepartitionRead])
+def get_department_repartitions(
+    id: int,
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_DEPARTMENT_REPARTITION_READ)),
+):
+    return service.get_department_repartition(id)
+
+
+@router.post(
+    "/{id}/departments",
+    status_code=status.HTTP_201_CREATED,
+    response_model=DepartmentRepartitionRead,
+)
+def create_department_repartition(
+    id: int,
+    payload: DepartmentRepartitionCreate,
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_DEPARTMENT_REPARTITION_CREATE)),
+):
+    return service.create_department_repartition(
+        payload.department_id, id, payload.valid_from, payload.valid_to
+    )

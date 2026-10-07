@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
 from app.api.deps import get_finance_group_service, require_permission
 from app.api.v1.schemas.finance import (
@@ -39,10 +39,10 @@ def update_division(
     return service.update_division(division_id, payload.name)
 
 
-@router.delete("/{division_id}", response_model=DivisionRead)
+@router.delete("/{division_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_division(
     division_id: int,
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_DIVISION_DELETE)),
 ):
-    return service.delete_division(division_id)
+    service.delete_division(division_id)

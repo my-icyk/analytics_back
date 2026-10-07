@@ -19,6 +19,8 @@ class GroupRuleRepository(BaseRepository):
             select *
             from finance.factGroupRules
             where group_id = :group_id
+            ORDER BY
+                valid_from DESC
         """
         rows = self._fetch_all(sql, {"group_id": group_id})
         return [GroupRule.model_validate(row) for row in rows]

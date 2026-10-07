@@ -17,10 +17,6 @@ class GroupRepository(BaseRepository):
         self, filters: GroupFilter
     ) -> tuple[list[str], dict, list[str]]:
         conditions, params, expanding = [], {}, []
-        if filters.group_ids:
-            conditions.append("g.id IN :group_ids")
-            params["group_ids"] = filters.group_ids
-            expanding.append("group_ids")
         if filters.division_ids:
             conditions.append("g.division_id IN :division_ids")
             params["division_ids"] = filters.division_ids
@@ -92,6 +88,10 @@ class GroupRepository(BaseRepository):
 
     def get_all(self, filters: GroupFilter) -> list[GroupDetail]:
         conditions, params, expanding = self._build_conditions(filters)
+
+        if filters.search:
+            conditions.append("g.name LIKE :search")
+            params["search"] = f"%{filters.search}%"
 
         sql = self._DETAIL_SQL
         if conditions:

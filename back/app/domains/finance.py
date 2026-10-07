@@ -8,8 +8,18 @@ class Division(DomainModel):
     name: str
 
 
+class DepartmentRepartition(DomainModel):
+    id: int
+    department_id: int
+    department_code: str
+    department_name: str
+    group_id: int
+    valid_from: date
+    valid_to: date | None
+
+
 class GroupFilter(DomainModel):
-    group_ids: list[int] | None = None
+    search: str | None = None
     division_ids: list[int] | None = None
     group_type_ids: list[int] | None = None
     limit: int = 50
@@ -55,3 +65,9 @@ class GroupRuleTarget(DomainModel):
     group_id: int
     allocation_type: str
     percent_value: float | None
+
+
+class Deparments(DomainModel):
+    id: int
+    code: str
+    name: str

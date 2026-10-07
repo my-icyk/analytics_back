@@ -62,6 +62,16 @@ class PermissionEnum(StrEnum):
     FINANCE_RULE_TARGET_UPDATE = "finance:rule_target:update"
     FINANCE_RULE_TARGET_DELETE = "finance:rule_target:delete"
 
+    FINANCE_DEPARTMENT_CREATE = "finance:department:create"
+    FINANCE_DEPARTMENT_READ = "finance:department:read"
+    FINANCE_DEPARTMENT_UPDATE = "finance:department:update"
+    FINANCE_DEPARTMENT_DELETE = "finance:department:delete"
+
+    FINANCE_DEPARTMENT_REPARTITION_CREATE = "finance:department_repartition:create"
+    FINANCE_DEPARTMENT_REPARTITION_READ = "finance:department_repartition:read"
+    FINANCE_DEPARTMENT_REPARTITION_UPDATE = "finance:department_repartition:update"
+    FINANCE_DEPARTMENT_REPARTITION_DELETE = "finance:department_repartition:delete"
+
 
 def has_permission(user: User, permission: PermissionEnum) -> bool:
     if user.is_admin:

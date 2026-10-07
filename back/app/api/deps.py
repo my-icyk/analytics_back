@@ -7,6 +7,7 @@ from app.db.database import get_db
 from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.authorization_repository import AuthorizationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
+from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
 from app.repositories.group_repository import GroupRepository
 from app.repositories.group_rule_repository import GroupRuleRepository
@@ -27,7 +28,7 @@ from app.services.role_permission_service import RolePermissionService
 from app.services.specific_service import SpecificService
 from app.services.user_service import UserService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=True)
 
 
 # TODO: WTF HERE IS HAPPENDS
@@ -45,6 +46,12 @@ def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
 
 def get_role_repository(db: Session = Depends(get_db)) -> RoleRepository:
     return RoleRepository(db)
+
+
+def get_department_repartition_repository(
+    db: Session = Depends(get_db),
+) -> DepartmentRepartitionRepository:
+    return DepartmentRepartitionRepository(db)
 
 
 def get_user_role_repository(db: Session = Depends(get_db)) -> UserRoleRepository:
@@ -184,12 +191,16 @@ def get_finance_group_service(
     division_repository: DivisionRepository = Depends(get_division_repository),
     group_repository: GroupRepository = Depends(get_group_repository),
     group_rule_repository: GroupRuleRepository = Depends(get_group_rule_repository),
+    department_repartition_repository: DepartmentRepartitionRepository = Depends(
+        get_department_repartition_repository
+    ),
 ) -> FinanceGroupService:
     return FinanceGroupService(
         group_type_repository=group_type_repository,
         division_repository=division_repository,
         group_repository=group_repository,
         group_rule_repository=group_rule_repository,
+        department_repartition_repository=department_repartition_repository,
     )
 
 

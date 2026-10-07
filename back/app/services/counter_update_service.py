@@ -20,6 +20,19 @@ class CounterUpdateService:
             raise NotFoundError("counters_update", "id", str(exception_id))
         return row
 
+    def get_exceptions(
+        self,
+        counter_id: int | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[CounterExceptions]:
+        return self.repository.get_all(
+            counter_id=counter_id, limit=limit, offset=offset
+        )
+
+    def count_exceptions(self, counter_id: int | None = None) -> int:
+        return self.repository.count(counter_id=counter_id)
+
     def create(self, data: CounterExceptionsCreate, user_id: int) -> None:
         # TODO: NEED TO ADD VALIDATION
         self.repository.create(
