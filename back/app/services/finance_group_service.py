@@ -181,8 +181,8 @@ class FinanceGroupService:
             id, department_id, group_id, valid_from, valid_to
         )
 
-    def delete_department_repartition(self, id: int) -> None:
-        self.department_repartition_repository.delete(id)
+    def delete_department_repartition(self, id: int, group_id: int) -> None:
+        self.department_repartition_repository.delete(id, group_id)
 
     def get_departments(self) -> list[Deparments]:
         return self.department_repartition_repository.get_departments()

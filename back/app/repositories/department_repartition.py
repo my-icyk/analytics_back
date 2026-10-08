@@ -94,10 +94,10 @@ class DepartmentRepartitionRepository(BaseRepository):
             },
         )
 
-    def delete(self, id: int) -> None:
+    def delete(self, id: int, group_id: int) -> None:
         sql = """
             delete from finance.factDepartmentsRepartition
-            where id = :id
+            where id = :id and group_id = :group_id
         """
         self._execute(sql, {"id": id})
 
