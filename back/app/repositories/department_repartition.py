@@ -99,7 +99,7 @@ class DepartmentRepartitionRepository(BaseRepository):
             delete from finance.factDepartmentsRepartition
             where id = :id and group_id = :group_id
         """
-        self._execute(sql, {"id": id})
+        self._execute(sql, {"id": id, "group_id": group_id})
 
     def get_departments(self) -> list[Deparments]:
         sql = """
