@@ -10,6 +10,7 @@ from app.api.v1.schemas.finance import (
     DepartmentRead,
     DepartmentRepartitionCreate,
     DepartmentRepartitionRead,
+    DepartmentRepartitionUpdate,
     GroupCreate,
     GroupLookup,
     GroupRead,
@@ -156,4 +157,21 @@ def create_department_repartition(
 ):
     return service.create_department_repartition(
         payload.department_id, id, payload.valid_from, payload.valid_to
+    )
+
+
+@router.put(
+    "/{group_id}/departments/{id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def update_department_repartition(
+    group_id: int,
+    id: int,
+    payload: DepartmentRepartitionUpdate,
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_DEPARTMENT_REPARTITION_UPDATE)),
+):
+    # TODO: de exclus return statment
+    service.update_department_repartition(
+        id, payload.department_id, group_id, payload.valid_from, payload.valid_to
     )

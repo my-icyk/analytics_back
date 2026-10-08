@@ -175,12 +175,11 @@ class FinanceGroupService:
         group_id: int,
         valid_from: date,
         valid_to: date | None,
-    ) -> DepartmentRepartition:
+    ) -> None:
         self.get_group(group_id)
-        repartition = self.department_repartition_repository.update(
+        self.department_repartition_repository.update(
             id, department_id, group_id, valid_from, valid_to
         )
-        return repartition
 
     def delete_department_repartition(self, id: int) -> None:
         self.department_repartition_repository.delete(id)

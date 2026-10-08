@@ -73,17 +73,17 @@ class DepartmentRepartitionRepository(BaseRepository):
         group_id: int,
         valid_from: date,
         valid_to: date | None,
-    ) -> DepartmentRepartition:
+    ) -> None:
         sql = """
             update finance.factDepartmentsRepartition
             set department_id = :department_id,
                 group_id = :group_id,
                 valid_from = :valid_from,
                 valid_to = :valid_to
-            OUTPUT inserted.*
+            
             where id = :id
         """
-        row = self._fetch_one(
+        self._execute(
             sql,
             {
                 "id": id,
@@ -93,7 +93,6 @@ class DepartmentRepartitionRepository(BaseRepository):
                 "valid_to": valid_to,
             },
         )
-        return DepartmentRepartition.model_validate(row)
 
     def delete(self, id: int) -> None:
         sql = """
