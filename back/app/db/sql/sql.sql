@@ -63,3 +63,26 @@ CREATE TABLE api.refresh_tokens (
     revoked_at DATETIME2 NULL,
     replaced_by BIGINT NULL REFERENCES api.refresh_tokens(id)
 );
+
+
+
+DROP TABLE IF EXISTS params.counter_exceptions
+CREATE TABLE params.counter_exceptions (
+  id BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+  counter_id INT NOT NULL,
+  valid_from DATE NOT NULL,
+  valid_to DATE NOT NULL,
+  visitors INT NOT NULL,
+  is_auto BIT NOT NULL DEFAULT 0,
+  reason NVARCHAR(500) NULL,
+  created_by_user_id BIGINT NOT NULL,
+  created_at DATETIME2(0) NOT NULL CONSTRAINT df_counter_exceptions_created DEFAULT GETDATE(),
+  updated_at DATETIME2(0) NOT NULL CONSTRAINT df_counter_exceptions_updated DEFAULT GETDATE(),
+  CONSTRAINT chk_counter_exceptions_dates CHECK (valid_to >= valid_from),
+  CONSTRAINT chk_counter_exceptions_visitors CHECK (visitors >= 0),
+  CONSTRAINT fk_counter_exceptions_created_by
+  FOREIGN KEY (created_by_user_id) REFERENCES api.users (id),
+);
+
+CREATE INDEX idx_counter_period
+  ON params.counter_exceptions (counter_id, valid_from, valid_to);
