@@ -86,3 +86,20 @@ CREATE TABLE params.counter_exceptions (
 
 CREATE INDEX idx_counter_period
   ON params.counter_exceptions (counter_id, valid_from, valid_to);
+
+
+
+CREATE OR ALTER PROCEDURE api.sp_lookup_users
+    @search NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 50
+		value = u.id,
+		label = CONCAT(u.username, ' (', u.id, ')')
+    FROM api.users u
+    WHERE
+		u.username LIKE '%' + @search + '%'
+    ORDER BY u.username;
+END

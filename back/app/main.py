@@ -25,10 +25,12 @@ def root():
 origins = [
     "http://localhost:5173",  # Vite
     "http://localhost:4173",  # CRA (if used)
+    "http://localhost:3000",  # CRA (if used)
     "http://analytics.local:8081",
     "http://172.28.130.61:5173",
     "http://192.168.100.11:5173",
     "http://172.28.130.61:4173",
+    "http://172.28.130.61:3000",
 ]
 
 app.add_middleware(

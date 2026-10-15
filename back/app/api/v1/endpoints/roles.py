@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from app.api.deps import (
     get_role_permission_service,
     require_permission,
 )
+from app.api.v1.schemas.common import PaginatedResponse
 from app.core.permisions import PermissionEnum
+from app.repositories.base import LookupResponse
 from app.schemas.permission_schema import PermissionRead
 from app.schemas.role_schema import RoleCreate, RoleRead, RoleUpdate
 from app.services.role_permission_service import RolePermissionService
@@ -12,12 +14,28 @@ from app.services.role_permission_service import RolePermissionService
 router = APIRouter(prefix="/roles", tags=["roles"])
 
 
-@router.get("", response_model=list[RoleRead])
+@router.get("", response_model=PaginatedResponse[RoleRead])
 def get_roles(
+    name: str | None = Query(None),
+    limit: int = Query(10, le=200, ge=1),
+    page: int = Query(1, ge=1),
     service: RolePermissionService = Depends(get_role_permission_service),
     _=Depends(require_permission(PermissionEnum.ROLE_READ)),
 ):
-    return service.get_roles()
+    items, total = service.get_roles(name=name, limit=limit, offset=(page - 1) * limit)
+    return PaginatedResponse(
+        data=items,
+        total=total,
+    )
+
+
+@router.get("/lookup", response_model=list[LookupResponse])
+def lookup_roles(
+    search: str = Query(...),
+    service: RolePermissionService = Depends(get_role_permission_service),
+    _=Depends(require_permission(PermissionEnum.ROLE_READ)),
+):
+    return service.lookup_roles(search)
 
 
 @router.get("/{role_id}", response_model=RoleRead)
@@ -57,9 +75,16 @@ def delete(
     service.delete_role(role_id)
 
 
-@router.post(
-    "/{role_id}/permissions/{permission_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.get("/{role_id}/permissions", response_model=list[PermissionRead])
+def get_permissions_by_role_id(
+    role_id: int,
+    service: RolePermissionService = Depends(get_role_permission_service),
+    _: int = Depends(require_permission(PermissionEnum.ROLE_PERMISSION_READ)),
+):
+    return service.get_permissions_by_role_id(role_id)
+
+
+@router.post("/{role_id}/permissions", status_code=status.HTTP_204_NO_CONTENT)
 def assign_permission_to_role(
     role_id: int,
     permission_id: int,
@@ -79,12 +104,3 @@ def revoke_permission_from_role(
     _: int = Depends(require_permission(PermissionEnum.ROLE_PERMISSION_REVOKE)),
 ):
     service.revoke_permission_from_role(role_id, permission_id)
-
-
-@router.get("/{role_id}/permissions", response_model=list[PermissionRead])
-def get_permissions_by_role_id(
-    role_id: int,
-    service: RolePermissionService = Depends(get_role_permission_service),
-    _: int = Depends(require_permission(PermissionEnum.ROLE_PERMISSION_READ)),
-):
-    return service.get_permissions_by_role_id(role_id)

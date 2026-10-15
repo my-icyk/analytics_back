@@ -7,10 +7,23 @@ What IS shared and worth centralizing: running a statement and turning rows
 into plain dicts, ready to hand to a Pydantic schema.
 """
 
+from enum import Enum
 from typing import Any
 
+from pydantic import BaseModel
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm import Session
+
+
+class LookupResponse(BaseModel):
+    value: int
+    label: str
+
+
+class LookupObjects(Enum):
+    PERMISSIONS = "api.sp_lookup_permissions"
+    USERS = "api.sp_lookup_users"
+    ROLES = "api.sp_lookup_roles"
 
 
 class BaseRepository:
@@ -65,3 +78,8 @@ class BaseRepository:
             )
         rows = self.db.execute(stmt, params or {}).mappings().all()
         return [dict(r) for r in rows]
+
+    def _lookup(self, obj: LookupObjects, search: str) -> list[LookupResponse]:
+        sql = f"exec {obj.value} @search = :search"
+        rows = self._fetch_all(sql, {"search": search})
+        return [LookupResponse.model_validate(row) for row in rows]

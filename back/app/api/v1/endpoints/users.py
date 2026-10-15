@@ -8,6 +8,7 @@ from app.api.deps import (
 )
 from app.api.v1.schemas.user import MyUser, UserCreate, UserRead, UserUpdate
 from app.core.permisions import PermissionEnum
+from app.repositories.base import LookupResponse
 from app.schemas.role_schema import RoleRead
 from app.services.role_permission_service import RolePermissionService
 from app.services.user_service import UserService
@@ -36,15 +37,26 @@ def get_me(
     )
 
 
-@router.get("/", response_model=list[UserRead])
+@router.get("")
 def get_all_users(
     service: UserService = Depends(get_user_service),
     _: int = Depends(require_permission(PermissionEnum.USER_READ)),
 ):
-    return service.get_all_users()
+
+    return {"data": service.get_all_users(), "total": 100}
 
 
-@router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+@router.get("/lookup", response_model=list[LookupResponse])
+def lookup_users(
+    search: str,
+    service: UserService = Depends(get_user_service),
+    _: int = Depends(require_permission(PermissionEnum.USER_READ)),
+):
+
+    return service.lookup_users(search=search)
+
+
+@router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def create_user(
     payload: UserCreate,
     service: UserService = Depends(get_user_service),
@@ -54,6 +66,8 @@ def create_user(
     return service.create_user(
         payload.username,
         payload.password,
+        payload.name,
+        payload.email,
     )
 
 
@@ -66,14 +80,16 @@ def get_user(
     return service.get_user(user_id)
 
 
-@router.patch("/{user_id}", response_model=UserRead)
+@router.put("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def update_user(
     user_id: int,
     payload: UserUpdate,
     service: UserService = Depends(get_user_service),
     _: int = Depends(require_permission(PermissionEnum.USER_UPDATE)),
 ):
-    return service.update_user(user_id, payload.username)
+    service.update_user(
+        user_id, payload.username, payload.email, payload.is_active, payload.name
+    )
 
 
 @router.patch("/users/{user_id}/grant-admin", response_model=UserRead)

@@ -1,6 +1,7 @@
 from app.domains.permission import Permission
 from app.domains.role import Role
 from app.exceptions.exceptions import AlreadyExistsError, NotFoundError
+from app.repositories.base import LookupResponse
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_permission_repository import RolePermissionRepository
 from app.repositories.role_repository import RoleRepository
@@ -62,8 +63,10 @@ class RolePermissionService:
     def get_permissions(self) -> list[Permission]:
         return self.permission_repository.get_all()
 
-    def get_roles(self) -> list[Role]:
-        return self.role_repository.get_all()
+    def get_roles(
+        self, name: str | None, limit: int, offset: int
+    ) -> tuple[list[Role], int]:
+        return self.role_repository.get_all(name=name, limit=limit, offset=offset)
 
     # User-Role-related methods
     def assign_role_to_user(self, user_id: int, role_id: int) -> None:
@@ -108,3 +111,9 @@ class RolePermissionService:
         return self.role_permission_repository.role_has_permission(
             role_id, permission_id
         )
+
+    def lookup_permissions(self, search: str) -> list[LookupResponse]:
+        return self.permission_repository.lookup(search)
+
+    def lookup_roles(self, search: str) -> list[LookupResponse]:
+        return self.role_repository.lookup(search)

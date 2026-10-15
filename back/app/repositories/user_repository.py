@@ -6,7 +6,7 @@ round trip instead of a separate SELECT.
 """
 
 from app.domains.user import User
-from app.repositories.base import BaseRepository
+from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
 class UserRepository(BaseRepository):
@@ -37,29 +37,44 @@ class UserRepository(BaseRepository):
         """
         self._execute(sql, {"id": user_id})
 
-    def create(self, username: str, hashed_password: str) -> User:
+    def create(
+        self, username: str, hashed_password: str, name: str, email: str | None = None
+    ) -> User:
         sql = """
-            INSERT INTO api.users (username, hashed_password)
+            INSERT INTO api.users (username, hashed_password, name, email)
             OUTPUT INSERTED.*
-            VALUES (:username, :hashed_password)
+            VALUES (:username, :hashed_password, :name, :email)
         """
         row = self._fetch_one_or_none(
             sql,
             {
                 "username": username,
                 "hashed_password": hashed_password,
+                "name": name,
+                "email": email,
             },
         )
         assert row is not None, "INSERT with OUTPUT should always return a row"
         return User.model_validate(row)
 
-    def update_user(self, user_id: int, username: str) -> User:
+    def update_user(
+        self, user_id: int, username: str, email: str | None, is_active: bool, name: str
+    ) -> User:
 
-        params = {"user_id": user_id, "username": username}
+        params = {
+            "user_id": user_id,
+            "username": username,
+            "email": email,
+            "is_active": is_active,
+            "name": name,
+        }
 
         sql = """
             UPDATE api.users SET
-                username = :username
+                username = :username,
+                email = :email,
+                is_active = :is_active,
+                name = :name
             OUTPUT INSERTED.*
             WHERE id = :user_id
         """
@@ -75,6 +90,10 @@ class UserRepository(BaseRepository):
         """
         rows = self._fetch_all(sql, {})
         return [User.model_validate(row) for row in rows]
+
+    def lookup_users(self, search: str) -> list[LookupResponse]:
+        rows = self._lookup(LookupObjects.USERS, search)
+        return rows
 
     def set_admin(self, user_id: int) -> User:
         sql = """

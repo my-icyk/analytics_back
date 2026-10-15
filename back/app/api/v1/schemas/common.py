@@ -2,7 +2,6 @@ from pydantic import BaseModel
 
 
 class PaginatedResponse[T](BaseModel):
-    items: list[T]
+    data: list[T]
     total: int
-    limit: int
-    offset: int
+    success: bool = True

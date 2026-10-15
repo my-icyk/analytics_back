@@ -7,10 +7,16 @@ class UserRead(Base):
     id: int
     username: str
     is_admin: bool
+    is_active: bool
+    name: str
+    email: str | None = None
 
 
 class UserUpdate(Base):
     username: str = Field(..., min_length=5, max_length=50)
+    email: str | None = None
+    is_active: bool
+    name: str
 
 
 class MyUser(Base):
@@ -23,4 +29,6 @@ class MyUser(Base):
 
 class UserCreate(Base):
     username: str
+    email: str | None = None
     password: str = Field(..., min_length=8, max_length=128)
+    name: str

@@ -57,8 +57,8 @@ def get_groups(
     search: str | None = Query(None),
     division_ids: list[int] | None = Query(None),
     group_type_ids: list[int] | None = Query(None),
-    limit: int = Query(50, le=200, ge=1),
-    offset: int = Query(0, ge=0),
+    limit: int = Query(10, le=200, ge=1),
+    page: int = Query(0, ge=0),
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
@@ -68,16 +68,14 @@ def get_groups(
         division_ids=division_ids,
         group_type_ids=group_type_ids,
         limit=limit,
-        offset=offset,
+        offset=(page - 1) * limit,
     )
 
-    page = service.get_groups_page(filters)
+    rows = service.get_groups_page(filters)
 
     return PaginatedResponse(
-        items=page.items,
-        total=page.total,
-        limit=limit,
-        offset=offset,
+        data=rows.items,
+        total=rows.total,
     )
 
 

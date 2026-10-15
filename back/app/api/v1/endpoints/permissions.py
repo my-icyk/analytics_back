@@ -5,6 +5,7 @@ from app.api.deps import (
     require_permission,
 )
 from app.core.permisions import PermissionEnum
+from app.repositories.base import LookupResponse
 from app.schemas.permission_schema import PermissionRead
 from app.services.role_permission_service import RolePermissionService
 
@@ -17,6 +18,15 @@ def get_permissions(
     _=Depends(require_permission(PermissionEnum.PERMISSION_READ)),
 ):
     return service.get_permissions()
+
+
+@router.get("/lookup", response_model=list[LookupResponse])
+def lookup_permissions(
+    search: str,
+    service: RolePermissionService = Depends(get_role_permission_service),
+    _=Depends(require_permission(PermissionEnum.PERMISSION_READ)),
+):
+    return service.lookup_permissions(search)
 
 
 @router.get("/{permission_id}", response_model=PermissionRead)

@@ -1,6 +1,7 @@
 from app.core.security import get_password_hash, validate_password_strength
 from app.domains.user import User
 from app.exceptions.exceptions import UserNotFoundError
+from app.repositories.base import LookupResponse
 from app.repositories.user_repository import UserRepository
 
 
@@ -17,10 +18,14 @@ class UserService:
 
         return user
 
-    def create_user(self, username: str, password: str) -> User:
+    def create_user(
+        self, username: str, password: str, name: str, email: str | None = None
+    ) -> User:
         validate_password_strength(password)
         hashed = get_password_hash(password)
-        return self.user_repository.create(username=username, hashed_password=hashed)
+        return self.user_repository.create(
+            username=username, hashed_password=hashed, name=name, email=email
+        )
 
     def delete_user(self, user_id: int) -> None:
 
@@ -31,10 +36,14 @@ class UserService:
 
         self.user_repository.delete(user_id)
 
-    def update_user(self, user_id: int, username: str) -> User:
+    def update_user(
+        self, user_id: int, username: str, email: str | None, is_active: bool, name: str
+    ) -> User:
         self.get_user(user_id)
         # TODO: Need Check for username and i think for email
-        return self.user_repository.update_user(user_id, username)
+        return self.user_repository.update_user(
+            user_id, username, email=email, is_active=is_active, name=name
+        )
 
     def get_all_users(self) -> list[User]:
         return self.user_repository.get_all_users()
@@ -48,3 +57,6 @@ class UserService:
 
         self.get_user(user_id)
         return self.user_repository.revoke_admin(user_id)
+
+    def lookup_users(self, search: str) -> list[LookupResponse]:
+        return self.user_repository.lookup_users(search)

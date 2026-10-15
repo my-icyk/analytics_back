@@ -1,5 +1,5 @@
 from app.domains.role import Role
-from app.repositories.base import BaseRepository
+from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
 class RoleRepository(BaseRepository):
@@ -14,15 +14,33 @@ class RoleRepository(BaseRepository):
 
         return Role.model_validate(row) if row else None
 
-    def get_all(self) -> list[Role]:
-        sql = """
-            SELECT *
+    def get_all(
+        self, name: str | None, limit: int, offset: int
+    ) -> tuple[list[Role], int]:
+        where = ""
+        params: dict = {}
+
+        if name:
+            where = "WHERE UPPER(name) LIKE UPPER(:name)"
+            params["name"] = f"%{name}%"
+
+        rows = self._fetch_all(
+            f"""
+            SELECT id, name, description
             FROM api.roles
-        """
+            {where}
+            ORDER BY id
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+            """,
+            {**params, "limit": limit, "offset": offset},
+        )
 
-        rows = self._fetch_all(sql, {})
+        total = self._fetch_one(
+            f"SELECT COUNT(*) AS total FROM api.roles {where}",
+            params,
+        )["total"]
 
-        return [Role.model_validate(row) for row in rows]
+        return [Role.model_validate(row) for row in rows], total
 
     def create(self, name: str, description: str | None = None) -> Role:
         sql = """
@@ -63,3 +81,6 @@ class RoleRepository(BaseRepository):
             WHERE id = :id
         """
         self._execute(sql, {"id": role_id})
+
+    def lookup(self, search: str) -> list[LookupResponse]:
+        return self._lookup(LookupObjects.ROLES, search)

@@ -26,6 +26,8 @@ class RolePermissionRepository(BaseRepository):
             JOIN api.permissions AS p ON rp.permission_id = p.id
             WHERE
                 rp.role_id = :role_id
+            ORDER BY
+                p.name ASC
         """
         rows = self._fetch_all(sql, {"role_id": role_id})
         return [Permission.model_validate(row) for row in rows]
