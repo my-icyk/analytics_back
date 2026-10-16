@@ -13,6 +13,7 @@ from app.api.v1.schemas.finance import (
     DepartmentRepartitionUpdate,
     GroupCreate,
     GroupLookup,
+    GroupOverview,
     GroupRead,
     GroupTypeDetails,
     GroupUpdate,
@@ -79,7 +80,7 @@ def get_groups(
     )
 
 
-@router.get("/{id}", response_model=GroupRead)
+@router.get("/{id}", response_model=GroupOverview)
 def get_group(
     id: int,
     service: FinanceGroupService = Depends(get_finance_group_service),
@@ -133,7 +134,7 @@ def get_rules(
     return service.get_rules_by_group_id(id)
 
 
-@router.get("/{id}/departments", response_model=list[DepartmentRepartitionRead])
+@router.get("/{id}/repartitions", response_model=list[DepartmentRepartitionRead])
 def get_department_repartitions(
     id: int,
     service: FinanceGroupService = Depends(get_finance_group_service),
@@ -143,7 +144,7 @@ def get_department_repartitions(
 
 
 @router.post(
-    "/{id}/departments",
+    "/{id}/repartitions",
     status_code=status.HTTP_201_CREATED,
     response_model=DepartmentRepartitionRead,
 )
@@ -159,7 +160,7 @@ def create_department_repartition(
 
 
 @router.put(
-    "/{group_id}/departments/{id}",
+    "/{group_id}/repartitions/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def update_department_repartition(
@@ -176,7 +177,7 @@ def update_department_repartition(
 
 
 @router.delete(
-    "/{group_id}/departments/{id}",
+    "/{group_id}/repartitions/{id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_department_repartition(

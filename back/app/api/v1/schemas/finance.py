@@ -40,6 +40,15 @@ class GroupRead(Base):
     group_type: GroupTypeRead
 
 
+class GroupOverview(Base):
+    id: int
+    name: str
+    division: str
+    type: str
+    rules_count: int
+    repartitions_count: int
+
+
 class GroupCreate(Base):
     name: str
     division_id: int
@@ -106,12 +115,10 @@ class TargetUpdate(Base):
 
 class DepartmentRepartitionRead(Base):
     id: int
-    department_id: int
-    department_code: str
-    department_name: str
-    group_id: int
+    department: str
     valid_from: date
     valid_to: date | None
+    is_active: bool
 
 
 class DepartmentRepartitionCreate(Base):

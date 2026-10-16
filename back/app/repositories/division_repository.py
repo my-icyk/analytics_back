@@ -1,5 +1,5 @@
 from app.domains.finance import Division, DivisionDetail
-from app.repositories.base import BaseRepository
+from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
 class DivisionRepository(BaseRepository):
@@ -91,3 +91,6 @@ class DivisionRepository(BaseRepository):
             WHERE id = :id
         """
         self._execute(sql, {"id": id})
+
+    def lookup(self, search: str) -> list[LookupResponse]:
+        return self._lookup(LookupObjects.DIVISIONS, search)

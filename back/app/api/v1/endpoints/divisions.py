@@ -8,6 +8,7 @@ from app.api.v1.schemas.finance import (
     DivisionUpdate,
 )
 from app.core.permisions import PermissionEnum
+from app.repositories.base import LookupResponse
 from app.services.finance_group_service import FinanceGroupService
 
 router = APIRouter(prefix="/divisions")
@@ -19,6 +20,15 @@ def get_divisions(
     _=Depends(require_permission(PermissionEnum.FINANCE_DIVISION_READ)),
 ):
     return service.get_divisions()
+
+
+@router.get("/lookup", response_model=list[LookupResponse])
+def lookup_divisions(
+    search: str,
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_DIVISION_READ)),
+):
+    return service.lookup_divisions(search)
 
 
 @router.post("", response_model=DivisionRead)

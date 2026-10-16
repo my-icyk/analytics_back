@@ -10,6 +10,7 @@ from app.domains.finance import (
     GroupDetail,
     GroupFilter,
     GroupLookup,
+    GroupOverview,
     GroupPage,
 )
 from app.exceptions.exceptions import (
@@ -17,6 +18,7 @@ from app.exceptions.exceptions import (
     DeleteProtectedError,
     NotFoundError,
 )
+from app.repositories.base import LookupResponse
 from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
 from app.repositories.group_repository import GroupRepository
@@ -88,7 +90,7 @@ class FinanceGroupService:
 
         return self.division_repository.update(id, name)
 
-    def get_group(self, id: int) -> GroupDetail:
+    def get_group(self, id: int) -> GroupOverview:
         group = self.group_repository.get_by_id(id)
         if not group:
             raise NotFoundError("Group", "id", str(id))
@@ -106,9 +108,7 @@ class FinanceGroupService:
     ) -> int:
         return self.group_repository.count(filters)
 
-    def create_group(
-        self, name: str, group_type_id: int, division_id: int
-    ) -> GroupDetail:
+    def create_group(self, name: str, group_type_id: int, division_id: int):
         self._validate_group_name(name)
 
         self._validate_group_type(group_type_id)
@@ -117,9 +117,7 @@ class FinanceGroupService:
         group = self.group_repository.create(name, group_type_id, division_id)
         return self.get_group(group.id)
 
-    def update_group(
-        self, id: int, name: str, group_type_id: int, division_id: int
-    ) -> GroupDetail:
+    def update_group(self, id: int, name: str, group_type_id: int, division_id: int):
         self.get_group(id)
         existing_group: Group | None = self.group_repository.get_by_name(name)
 
@@ -191,3 +189,6 @@ class FinanceGroupService:
         self, search: str | None = None, limit: int = 10
     ) -> list[GroupLookup]:
         return self.group_repository.lookup(search, limit)
+
+    def lookup_divisions(self, search: str) -> list[LookupResponse]:
+        return self.division_repository.lookup(search)

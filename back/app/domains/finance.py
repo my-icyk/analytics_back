@@ -16,12 +16,10 @@ class DivisionDetail(DomainModel):
 
 class DepartmentRepartition(DomainModel):
     id: int
-    department_id: int
-    department_code: str
-    department_name: str
-    group_id: int
+    department: str
     valid_from: date
     valid_to: date | None
+    is_active: bool
 
 
 class GroupFilter(DomainModel):
@@ -49,6 +47,15 @@ class GroupDetail(DomainModel):
     name: str
     division: Division
     group_type: GroupType
+
+
+class GroupOverview(DomainModel):
+    id: int
+    name: str
+    division: str
+    type: str
+    rules_count: int
+    repartitions_count: int
 
 
 class GroupLookup(DomainModel):

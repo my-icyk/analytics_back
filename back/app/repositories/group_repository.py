@@ -1,4 +1,10 @@
-from app.domains.finance import Group, GroupDetail, GroupFilter, GroupLookup
+from app.domains.finance import (
+    Group,
+    GroupDetail,
+    GroupFilter,
+    GroupLookup,
+    GroupOverview,
+)
 from app.repositories.base import BaseRepository
 
 
@@ -62,23 +68,26 @@ class GroupRepository(BaseRepository):
         rows = self._fetch_some(sql, {"search": pattern, "limit": limit})
         return [GroupLookup.model_validate(row) for row in rows]
 
-    def get_by_id(self, id) -> GroupDetail | None:
+    def get_by_id(self, id) -> GroupOverview | None:
         sql = """
-            select
-                group_id = g.id,
-                group_name = g.name,
-                division_id = d.id,
-                division_name = d.name,
-                group_type_id = gt.id,
-                group_type_name = gt.name
-            from finance.dimGroups AS g
-            LEFT JOIN finance.dimDivision AS d ON d.id = g.division_id
+            SELECT
+                g.id,
+                g.name,
+                division   = d.name,
+                type = gt.name,
+                rules_count     = (SELECT COUNT(*) FROM finance.factGroupRules AS r
+                                WHERE r.group_id = g.id),
+                repartitions_count = (SELECT COUNT(*) FROM finance.factDepartmentsRepartition AS r
+                                    WHERE r.group_id = g.id)
+
+            FROM finance.dimGroups AS g
+            LEFT JOIN finance.dimDivision   AS d  ON d.id  = g.division_id
             LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
             where g.id = :id
         """
         rows = self._fetch_one_or_none(sql, {"id": id})
 
-        return self._map_group_detail(rows) if rows else None
+        return GroupOverview.model_validate(rows) if rows else None
 
     def get_by_id_light(self, id) -> Group | None:
         sql = """

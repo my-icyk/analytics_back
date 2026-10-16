@@ -25,19 +25,23 @@ class DepartmentRepartitionRepository(BaseRepository):
 
     def get_by_group_id(self, group_id: int) -> list[DepartmentRepartition]:
         sql = """
+            declare @date date = GETDATE()
             select 
                 main.id,
-                main.department_id,
-                department_code = d.code,
-                department_name = d.name,
-                main.group_id,
+                department = CONCAT(d.name, ' (', d.id, ')'),
+                is_active = op.is_active,
                 main.valid_from,
                 main.valid_to
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
+            outer apply (
+                SELECT
+                is_active = IIF(@date BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
+            ) as op
             where main.group_id = :group_id
-            ORDER BY
-                d.name ASC
+            ORDER BY 
+                op.is_active DESC,
+                main.valid_to ASC
         """
         rows = self._fetch_all(sql, {"group_id": group_id})
         return [DepartmentRepartition.model_validate(row) for row in rows]
