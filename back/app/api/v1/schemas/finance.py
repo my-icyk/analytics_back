@@ -130,3 +130,4 @@ class DepartmentRead(Base):
     id: int
     code: str
     name: str
+    brand: str

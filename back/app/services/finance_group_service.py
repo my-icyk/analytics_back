@@ -2,7 +2,7 @@ from datetime import date
 
 from app.api.v1.schemas.finance import GroupTypeDetails
 from app.domains.finance import (
-    Deparments,
+    Deparment,
     DepartmentRepartition,
     Division,
     DivisionDetail,
@@ -184,7 +184,7 @@ class FinanceGroupService:
     def delete_department_repartition(self, id: int, group_id: int) -> None:
         self.department_repartition_repository.delete(id, group_id)
 
-    def get_departments(self) -> list[Deparments]:
+    def get_departments(self) -> list[Deparment]:
         return self.department_repartition_repository.get_departments()
 
     def lookup_groups(

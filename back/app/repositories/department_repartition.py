@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.domains.finance import Deparments, DepartmentRepartition
+from app.domains.finance import Deparment, DepartmentRepartition
 from app.repositories.base import BaseRepository
 
 
@@ -101,14 +101,17 @@ class DepartmentRepartitionRepository(BaseRepository):
         """
         self._execute(sql, {"id": id, "group_id": group_id})
 
-    def get_departments(self) -> list[Deparments]:
+    def get_departments(self) -> list[Deparment]:
         sql = """
             select
                 id,
                 code,
-                name
+                name,
+                brand
             from finance.dimDepartments
-            order by name ASC
+            order by
+                brand ASC,
+                name ASC
         """
         rows = self._fetch_all(sql)
-        return [Deparments.model_validate(row) for row in rows]
+        return [Deparment.model_validate(row) for row in rows]

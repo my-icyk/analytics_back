@@ -78,7 +78,8 @@ class GroupRuleTarget(DomainModel):
     percent_value: float | None
 
 
-class Deparments(DomainModel):
+class Deparment(DomainModel):
     id: int
     code: str
     name: str
+    brand: str
