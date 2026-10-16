@@ -150,7 +150,6 @@ def get_department_repartitions(
 @router.post(
     "/{id}/repartitions",
     status_code=status.HTTP_201_CREATED,
-    response_model=DepartmentRepartitionRead,
 )
 def create_department_repartition(
     id: int,
@@ -158,9 +157,10 @@ def create_department_repartition(
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_DEPARTMENT_REPARTITION_CREATE)),
 ):
-    return service.create_department_repartition(
+    id = service.create_department_repartition(
         payload.department_id, id, payload.valid_from, payload.valid_to
     )
+    return {"id": id}
 
 
 @router.put(

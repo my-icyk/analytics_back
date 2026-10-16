@@ -53,13 +53,14 @@ class DepartmentRepartitionRepository(BaseRepository):
         group_id: int,
         valid_from: date,
         valid_to: date | None,
-    ) -> DepartmentRepartition:
+    ) -> int:
         sql = """
             insert into finance.factDepartmentsRepartition (department_id, group_id, valid_from, valid_to)
             OUTPUT inserted.id
             values (:department_id, :group_id, :valid_from, :valid_to)
         """
-        id = self._scalar(
+
+        return self._scalar(
             sql,
             {
                 "department_id": department_id,
@@ -68,8 +69,6 @@ class DepartmentRepartitionRepository(BaseRepository):
                 "valid_to": valid_to,
             },
         )
-        row = self.get_by_id(id)
-        return DepartmentRepartition.model_validate(row)
 
     def update(
         self,

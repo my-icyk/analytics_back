@@ -159,12 +159,12 @@ class FinanceGroupService:
 
     def create_department_repartition(
         self, department_id: int, group_id: int, valid_from: date, valid_to: date | None
-    ) -> DepartmentRepartition:
+    ) -> int:
         self.get_group(group_id)
-        repartition = self.department_repartition_repository.create(
+
+        return self.department_repartition_repository.create(
             department_id, group_id, valid_from, valid_to
         )
-        return repartition
 
     def update_department_repartition(
         self,
