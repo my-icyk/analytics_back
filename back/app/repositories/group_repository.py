@@ -153,16 +153,15 @@ class GroupRepository(BaseRepository):
 
         return self._scalar(sql, params)
 
-    def update(self, id: int, name: str, division_id: int, group_type_id: int) -> Group:
+    def update(self, id: int, name: str, division_id: int, group_type_id: int):
         sql = """
             update finance.dimGroups
             set name = :name,
                 division_id = :division_id,
                 group_type_id = :group_type_id
-            OUTPUT inserted.*
             where id = :id
         """
-        row = self._fetch_one(
+        self._execute(
             sql,
             {
                 "id": id,
@@ -171,7 +170,6 @@ class GroupRepository(BaseRepository):
                 "group_type_id": group_type_id,
             },
         )
-        return Group.model_validate(row)
 
     def delete(self, id: int) -> None:
         sql = """

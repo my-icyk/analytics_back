@@ -116,7 +116,9 @@ class FinanceGroupService:
         self._validate_division(division_id)
         return self.group_repository.create(name, group_type_id, division_id)
 
-    def update_group(self, id: int, name: str, group_type_id: int, division_id: int):
+    def update_group(
+        self, id: int, name: str, group_type_id: int, division_id: int
+    ) -> None:
         self.get_group(id)
         existing_group: Group | None = self.group_repository.get_by_name(name)
 
@@ -126,8 +128,8 @@ class FinanceGroupService:
         self._validate_group_type(group_type_id)
 
         self._validate_division(division_id)
-        group = self.group_repository.update(id, name, division_id, group_type_id)
-        return self.get_group(group.id)
+
+        self.group_repository.update(id, name, division_id, group_type_id)
 
     def delete_group(self, id: int) -> None:
         group = self.group_repository.get_by_id_light(id)

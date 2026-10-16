@@ -102,16 +102,14 @@ def create_group(
     return {"id": id}
 
 
-@router.put("/{id}", response_model=GroupRead)
+@router.put("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def update_group(
     id: int,
     payload: GroupUpdate,
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_UPDATE)),
 ):
-    return service.update_group(
-        id, payload.name, payload.group_type_id, payload.division_id
-    )
+    service.update_group(id, payload.name, payload.group_type_id, payload.division_id)
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
