@@ -139,17 +139,19 @@ class GroupRepository(BaseRepository):
             sql += " WHERE " + " AND ".join(conditions)
         return self._scalar(sql, params, expanding=expanding)
 
-    def create(self, name: str, group_type_id: int, division_id: int) -> Group:
+    def create(self, name: str, group_type_id: int, division_id: int) -> int:
+        params = {
+            "name": name,
+            "group_type_id": group_type_id,
+            "division_id": division_id,
+        }
         sql = """
             insert into finance.dimGroups (name, division_id, group_type_id)
-            OUTPUT inserted.*
+            OUTPUT inserted.id
             values (:name, :division_id, :group_type_id)
         """
-        row = self._fetch_one(
-            sql,
-            {"name": name, "group_type_id": group_type_id, "division_id": division_id},
-        )
-        return Group.model_validate(row)
+
+        return self._scalar(sql, params)
 
     def update(self, id: int, name: str, division_id: int, group_type_id: int) -> Group:
         sql = """

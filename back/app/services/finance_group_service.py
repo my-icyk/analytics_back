@@ -108,14 +108,13 @@ class FinanceGroupService:
     ) -> int:
         return self.group_repository.count(filters)
 
-    def create_group(self, name: str, group_type_id: int, division_id: int):
+    def create_group(self, name: str, group_type_id: int, division_id: int) -> int:
         self._validate_group_name(name)
 
         self._validate_group_type(group_type_id)
 
         self._validate_division(division_id)
-        group = self.group_repository.create(name, group_type_id, division_id)
-        return self.get_group(group.id)
+        return self.group_repository.create(name, group_type_id, division_id)
 
     def update_group(self, id: int, name: str, group_type_id: int, division_id: int):
         self.get_group(id)

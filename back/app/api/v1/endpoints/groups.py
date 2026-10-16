@@ -92,16 +92,14 @@ def get_group(
 @router.post(
     "",
     status_code=status.HTTP_201_CREATED,
-    response_model=GroupRead,
 )
 def create_group(
     payload: GroupCreate,
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_CREATE)),
 ):
-    return service.create_group(
-        payload.name, payload.group_type_id, payload.division_id
-    )
+    id = service.create_group(payload.name, payload.group_type_id, payload.division_id)
+    return {"id": id}
 
 
 @router.put("/{id}", response_model=GroupRead)
