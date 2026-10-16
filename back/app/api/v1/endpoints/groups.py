@@ -12,7 +12,6 @@ from app.api.v1.schemas.finance import (
     DepartmentRepartitionRead,
     DepartmentRepartitionUpdate,
     GroupCreate,
-    GroupLookup,
     GroupOverview,
     GroupRead,
     GroupTypeDetails,
@@ -21,6 +20,7 @@ from app.api.v1.schemas.finance import (
 )
 from app.core.permisions import PermissionEnum
 from app.domains.finance import GroupFilter
+from app.repositories.base import LookupResponse
 from app.services.finance_group_service import FinanceGroupService
 from app.services.finance_rule_service import FinanceRuleService
 
@@ -35,6 +35,15 @@ def get_departments(
     return service.get_departments()
 
 
+@router.get("/departments/lookup", response_model=list[LookupResponse])
+def lookup_departments(
+    search: str = Query(...),
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_DEPARTMENT_REPARTITION_READ)),
+):
+    return service.lookup_departments(search)
+
+
 @router.get("/types", response_model=list[GroupTypeDetails])
 def get_group_types(
     service: FinanceGroupService = Depends(get_finance_group_service),
@@ -43,14 +52,13 @@ def get_group_types(
     return service.get_group_types()
 
 
-@router.get("/lookup", response_model=list[GroupLookup])
+@router.get("/lookup", response_model=list[LookupResponse])
 def lookup_groups(
-    search: str | None = Query(None),
-    limit: int = Query(10, le=50, ge=1),
+    search: str = Query(None),
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
-    return service.lookup_groups(search, limit)
+    return service.lookup_groups(search)
 
 
 @router.get("", response_model=PaginatedResponse[GroupRead])

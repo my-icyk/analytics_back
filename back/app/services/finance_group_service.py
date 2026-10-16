@@ -9,7 +9,6 @@ from app.domains.finance import (
     Group,
     GroupDetail,
     GroupFilter,
-    GroupLookup,
     GroupOverview,
     GroupPage,
 )
@@ -186,10 +185,11 @@ class FinanceGroupService:
     def get_departments(self) -> list[Deparment]:
         return self.department_repartition_repository.get_departments()
 
-    def lookup_groups(
-        self, search: str | None = None, limit: int = 10
-    ) -> list[GroupLookup]:
-        return self.group_repository.lookup(search, limit)
+    def lookup_groups(self, search: str) -> list[LookupResponse]:
+        return self.group_repository.lookup(search)
 
     def lookup_divisions(self, search: str) -> list[LookupResponse]:
         return self.division_repository.lookup(search)
+
+    def lookup_departments(self, search: str) -> list[LookupResponse]:
+        return self.department_repartition_repository.lookup(search)

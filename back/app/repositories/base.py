@@ -25,6 +25,8 @@ class LookupObjects(Enum):
     USERS = "api.sp_lookup_users"
     ROLES = "api.sp_lookup_roles"
     DIVISIONS = "api.sp_lookup_divisions"
+    DEPARTMENTS = "api.sp_lookup_departments"
+    GROUPS = "api.sp_lookup_groups"
 
 
 class BaseRepository:

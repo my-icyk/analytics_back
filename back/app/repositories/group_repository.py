@@ -2,10 +2,9 @@ from app.domains.finance import (
     Group,
     GroupDetail,
     GroupFilter,
-    GroupLookup,
     GroupOverview,
 )
-from app.repositories.base import BaseRepository
+from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
 class GroupRepository(BaseRepository):
@@ -52,21 +51,8 @@ class GroupRepository(BaseRepository):
             }
         )
 
-    def lookup(self, search: str | None = None, limit: int = 10) -> list[GroupLookup]:
-        pattern = f"%{search or ''}%"
-        # exclude limit somehow
-        limit = max(1, min(limit, 50))
-        sql = """
-            SELECT TOP (:limit)
-                g.id,
-                description = CONCAT(g.name, ' (', d.name, ')')
-            FROM finance.dimGroups AS g
-            JOIN finance.dimDivision AS d ON d.id = g.division_id
-            WHERE g.name LIKE :search
-            ORDER BY g.name, g.id
-        """
-        rows = self._fetch_some(sql, {"search": pattern, "limit": limit})
-        return [GroupLookup.model_validate(row) for row in rows]
+    def lookup(self, search: str) -> list[LookupResponse]:
+        return self._lookup(LookupObjects.GROUPS, search)
 
     def get_by_id(self, id) -> GroupOverview | None:
         sql = """
