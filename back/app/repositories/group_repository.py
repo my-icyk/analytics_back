@@ -73,9 +73,11 @@ class GroupRepository(BaseRepository):
             SELECT
                 g.id,
                 g.name,
-                division   = d.name,
-                type = gt.name,
-                rules_count     = (SELECT COUNT(*) FROM finance.factGroupRules AS r
+                division_id = d.id,
+                division_name = d.name,
+                group_type_id = gt.id,
+                group_type_name = gt.name,
+                rules_count = (SELECT COUNT(*) FROM finance.factGroupRules AS r
                                 WHERE r.group_id = g.id),
                 repartitions_count = (SELECT COUNT(*) FROM finance.factDepartmentsRepartition AS r
                                     WHERE r.group_id = g.id)

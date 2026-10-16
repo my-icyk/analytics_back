@@ -43,8 +43,10 @@ class GroupRead(Base):
 class GroupOverview(Base):
     id: int
     name: str
-    division: str
-    type: str
+    division_id: int
+    division_name: str
+    group_type_id: int
+    group_type_name: str
     rules_count: int
     repartitions_count: int
 

@@ -52,8 +52,10 @@ class GroupDetail(DomainModel):
 class GroupOverview(DomainModel):
     id: int
     name: str
-    division: str
-    type: str
+    division_id: int
+    division_name: str
+    group_type_id: int
+    group_type_name: str
     rules_count: int
     repartitions_count: int
 
