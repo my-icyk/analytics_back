@@ -28,7 +28,8 @@ class DepartmentRepartitionRepository(BaseRepository):
             declare @date date = GETDATE()
             select 
                 main.id,
-                department = CONCAT(d.name, ' (', d.id, ')'),
+                main.department_id,
+                department_name = d.name,
                 is_active = op.is_active,
                 main.valid_from,
                 main.valid_to

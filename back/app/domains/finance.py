@@ -16,7 +16,8 @@ class DivisionDetail(DomainModel):
 
 class DepartmentRepartition(DomainModel):
     id: int
-    department: str
+    department_id: int
+    department_name: str
     valid_from: date
     valid_to: date | None
     is_active: bool
