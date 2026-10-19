@@ -82,8 +82,8 @@ class GroupRule(DomainModel):
 
 class GroupRuleTarget(DomainModel):
     id: int
-    rule_id: int
     group_id: int
+    group_name: str
     allocation_type: str
     percent_value: float | None
 

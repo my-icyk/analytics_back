@@ -71,7 +71,6 @@ class GroupLookup(Base):
 class RuleRead(Base):
     id: int
     name: str
-    group_id: int
     valid_from: date
     valid_to: date | None
     percent_value: float
@@ -79,37 +78,33 @@ class RuleRead(Base):
 
 class RuleCreate(Base):
     name: str
-    group_id: int
     valid_from: date
-    valid_to: date | None
+    valid_to: date | None = None
     percent_value: float
 
 
 class RuleUpdate(Base):
     name: str
-    group_id: int
     valid_from: date
-    valid_to: date | None
+    valid_to: date | None = None
     percent_value: float
 
 
 class TargetRead(Base):
     id: int
-    rule_id: int
     group_id: int
+    group_name: str
     allocation_type: str
     percent_value: float | None
 
 
 class TargetCreate(Base):
-    rule_id: int
     group_id: int
     allocation_type: str
     percent_value: float | None
 
 
 class TargetUpdate(Base):
-    rule_id: int
     group_id: int
     allocation_type: str
     percent_value: float | None
@@ -127,13 +122,13 @@ class DepartmentRepartitionRead(Base):
 class DepartmentRepartitionCreate(Base):
     department_id: int
     valid_from: date
-    valid_to: date | None
+    valid_to: date | None = None
 
 
 class DepartmentRepartitionUpdate(Base):
     department_id: int
     valid_from: date
-    valid_to: date | None
+    valid_to: date | None = None
 
 
 class DepartmentRead(Base):

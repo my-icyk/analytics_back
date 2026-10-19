@@ -14,19 +14,21 @@ class GroupRuleTargetRepository(BaseRepository):
 
     def get_by_id_and_rule_id(self, id: int, rule_id: int) -> GroupRuleTarget | None:
         sql = """
-            select *
-            from finance.factGroupRulesTargets
+            select gt.*, g.name as group_name
+            from finance.factGroupRulesTargets as gt
+            join finance.dimGroups AS g on gt.group_id = g.id
             where
-                id = :id and
-                rule_id = :rule_id
+                gt.id = :id and
+                gt.rule_id = :rule_id
         """
         row = self._fetch_one_or_none(sql, {"id": id, "rule_id": rule_id})
         return GroupRuleTarget.model_validate(row) if row else None
 
     def get_by_rule_id(self, rule_id: int) -> list[GroupRuleTarget]:
         sql = """
-            select *
-            from finance.factGroupRulesTargets
+            select gr.*, g.name as group_name
+            from finance.factGroupRulesTargets AS gr
+            join finance.dimGroups AS g on gr.group_id = g.id
             where rule_id = :rule_id
         """
         rows = self._fetch_all(sql, {"rule_id": rule_id})
@@ -38,14 +40,15 @@ class GroupRuleTargetRepository(BaseRepository):
         group_id: int,
         allocation_type: str,
         percent_value: float | None,
-    ) -> GroupRuleTarget:
+    ) -> int:
         sql = """
             insert into finance.factGroupRulesTargets (rule_id, group_id, allocation_type, percent_value)
-            OUTPUT INSERTED.*
+            OUTPUT INSERTED.id
             values (:rule_id, :group_id, :allocation_type, :percent_value)
 
         """
-        row = self._fetch_one(
+
+        return self._scalar(
             sql,
             {
                 "rule_id": rule_id,
@@ -54,7 +57,6 @@ class GroupRuleTargetRepository(BaseRepository):
                 "percent_value": percent_value,
             },
         )
-        return GroupRuleTarget.model_validate(row)
 
     def update(
         self,
@@ -63,17 +65,16 @@ class GroupRuleTargetRepository(BaseRepository):
         group_id: int,
         allocation_type: str,
         percent_value: float | None,
-    ) -> GroupRuleTarget:
+    ) -> None:
         sql = """
             update finance.factGroupRulesTargets
             set rule_id = :rule_id,
                 group_id = :group_id,
                 allocation_type = :allocation_type,
                 percent_value = :percent_value
-            OUTPUT INSERTED.*
             where id = :id
         """
-        row = self._fetch_one(
+        self._execute(
             sql,
             {
                 "id": id,
@@ -83,7 +84,6 @@ class GroupRuleTargetRepository(BaseRepository):
                 "percent_value": percent_value,
             },
         )
-        return GroupRuleTarget.model_validate(row)
 
     def delete(self, id: int) -> None:
         sql = """

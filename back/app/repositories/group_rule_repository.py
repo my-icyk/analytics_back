@@ -27,34 +27,34 @@ class GroupRuleRepository(BaseRepository):
 
     def create(
         self,
-        name: str,
         group_id: int,
+        name: str,
         valid_from: date,
         valid_to: date | None,
         percent_value: float,
-    ) -> GroupRule:
+    ) -> int:
         sql = """
             insert into finance.factGroupRules (name, group_id, valid_from, valid_to, percent_value)
-            OUTPUT inserted.*
+            OUTPUT inserted.id
             values (:name, :group_id, :valid_from, :valid_to, :percent_value)
         """
-        row = self._fetch_one(
+
+        return self._scalar(
             sql,
             {
-                "name": name,
                 "group_id": group_id,
+                "name": name,
                 "valid_from": valid_from,
                 "valid_to": valid_to,
                 "percent_value": percent_value,
             },
         )
-        return GroupRule.model_validate(row)
 
     def update(
         self,
-        id: int,
-        name: str,
         group_id: int,
+        rule_id: int,
+        name: str,
         valid_from: date,
         valid_to: date | None,
         percent_value: float,
@@ -67,13 +67,13 @@ class GroupRuleRepository(BaseRepository):
                 valid_to = :valid_to,
                 percent_value = :percent_value
             OUTPUT inserted.*
-            where id = :id
+            where id = :rule_id
 
         """
         row = self._fetch_one(
             sql,
             {
-                "id": id,
+                "rule_id": rule_id,
                 "name": name,
                 "group_id": group_id,
                 "valid_from": valid_from,
@@ -83,12 +83,14 @@ class GroupRuleRepository(BaseRepository):
         )
         return GroupRule.model_validate(row)
 
-    def delete(self, id: int) -> None:
+    def delete(self, group_id: int, rule_id: int) -> None:
         sql = """
             delete from finance.factGroupRules
-            where id = :id
+            where
+                id = :rule_id AND
+                group_id = :group_id
         """
-        self._execute(sql, {"id": id})
+        self._execute(sql, {"rule_id": rule_id, "group_id": group_id})
 
     def has_overlapping_rule(
         self,

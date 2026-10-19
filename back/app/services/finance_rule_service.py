@@ -58,19 +58,20 @@ class FinanceRuleService:
 
     def create_rule(
         self,
-        name: str,
         group_id: int,
+        name: str,
         valid_from: date,
         valid_to: date | None,
         percent_value: float,
-    ) -> GroupRule:
+    ) -> int:
         self._validate_group_exists(group_id)
-        self._validate_overlapping_rule(
-            group_id=group_id,
-            valid_from=valid_from,
-            valid_to=valid_to,
-            exclude_id=0,
-        )
+        # TODO: Trebuie de validat la 100%
+        # self._validate_overlapping_rule(
+        #     group_id=group_id,
+        #     valid_from=valid_from,
+        #     valid_to=valid_to,
+        #     exclude_id=0,
+        # )
 
         return self.group_rule_repository.create(
             name=name,
@@ -82,36 +83,36 @@ class FinanceRuleService:
 
     def update_rule(
         self,
-        id: int,
-        name: str,
         group_id: int,
+        rule_id: int,
+        name: str,
         valid_from: date,
         valid_to: date | None,
         percent_value: float,
-    ) -> GroupRule:
-        self.get_rule(id)
+    ) -> None:
+        self.get_rule(rule_id)
         self._validate_group_exists(group_id)
         self._validate_overlapping_rule(
             group_id=group_id,
             valid_from=valid_from,
             valid_to=valid_to,
-            exclude_id=id,
+            exclude_id=rule_id,
         )
 
         # proceed to update the rule
-        return self.group_rule_repository.update(
-            id=id,
-            name=name,
+        self.group_rule_repository.update(
             group_id=group_id,
+            rule_id=rule_id,
+            name=name,
             valid_from=valid_from,
             valid_to=valid_to,
             percent_value=percent_value,
         )
 
-    def delete_rule(self, id: int) -> None:
-        self.get_rule(id)
-        self.group_rule_target_repository.delete_by_rule_id(id)
-        self.group_rule_repository.delete(id)
+    def delete_rule(self, group_id: int, rule_id: int) -> None:
+        self.get_rule(rule_id)
+        self.group_rule_target_repository.delete_by_rule_id(rule_id)
+        self.group_rule_repository.delete(group_id, rule_id)
 
     def get_target(self, id: int) -> GroupRuleTarget:
         target = self.group_rule_target_repository.get_by_id(id)
@@ -132,7 +133,7 @@ class FinanceRuleService:
         group_id: int,
         allocation_type: str,
         percent_value: float | None,
-    ) -> GroupRuleTarget:
+    ) -> int:
         self.get_rule(rule_id)
 
         return self.group_rule_target_repository.create(
@@ -149,9 +150,9 @@ class FinanceRuleService:
         group_id: int,
         allocation_type: str,
         percent_value: float | None,
-    ) -> GroupRuleTarget:
+    ) -> None:
         self.get_rule(rule_id)
-        return self.group_rule_target_repository.update(
+        self.group_rule_target_repository.update(
             id=id,
             rule_id=rule_id,
             group_id=group_id,
@@ -159,7 +160,7 @@ class FinanceRuleService:
             percent_value=percent_value,
         )
 
-    def remove_target(self, target_id: int, rule_id: int) -> None:
+    def remove_target(self, rule_id: int, target_id: int) -> None:
         target = self.group_rule_target_repository.get_by_id_and_rule_id(
             target_id, rule_id
         )
