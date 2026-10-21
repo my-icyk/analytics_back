@@ -24,7 +24,6 @@ class LookupObjects(Enum):
     PERMISSIONS = "api.sp_lookup_permissions"
     USERS = "api.sp_lookup_users"
     ROLES = "api.sp_lookup_roles"
-    DIVISIONS = "api.sp_lookup_divisions"
     DEPARTMENTS = "api.sp_lookup_departments"
     GROUPS = "api.sp_lookup_groups"
 

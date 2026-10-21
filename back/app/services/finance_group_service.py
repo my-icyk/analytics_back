@@ -187,8 +187,5 @@ class FinanceGroupService:
     def lookup_groups(self, search: str) -> list[LookupResponse]:
         return self.group_repository.lookup(search)
 
-    def lookup_divisions(self, search: str) -> list[LookupResponse]:
-        return self.division_repository.lookup(search)
-
     def lookup_departments(self, search: str) -> list[LookupResponse]:
         return self.department_repartition_repository.lookup(search)
