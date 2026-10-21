@@ -7,7 +7,6 @@ from app.domains.finance import (
     Division,
     DivisionDetail,
     Group,
-    GroupDetail,
     GroupFilter,
     GroupOverview,
     GroupPage,
@@ -98,7 +97,7 @@ class FinanceGroupService:
     def get_groups(
         self,
         filters: GroupFilter,
-    ) -> list[GroupDetail]:
+    ) -> list[GroupOverview]:
         return self.group_repository.get_all(filters)
 
     def count_groups(

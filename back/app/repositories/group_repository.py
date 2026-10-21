@@ -99,14 +99,29 @@ class GroupRepository(BaseRepository):
 
         return Group.model_validate(row) if row else None
 
-    def get_all(self, filters: GroupFilter) -> list[GroupDetail]:
+    def get_all(self, filters: GroupFilter) -> list[GroupOverview]:
         conditions, params, expanding = self._build_conditions(filters)
 
         if filters.search:
             conditions.append("g.name LIKE :search")
             params["search"] = f"%{filters.search}%"
 
-        sql = self._DETAIL_SQL
+        sql = """
+        select
+            g.id,
+            g.name,
+            division_id = d.id,
+            division_name = d.name,
+            group_type_id = gt.id,
+            group_type_name = gt.name,
+            rules_count = (SELECT COUNT(*) FROM finance.factGroupRules AS r
+                            WHERE r.group_id = g.id),
+            repartitions_count = (SELECT COUNT(*) FROM finance.factDepartmentsRepartition AS r
+                                WHERE r.group_id = g.id)
+        from finance.dimGroups AS g
+        LEFT JOIN finance.dimDivision AS d ON d.id = g.division_id
+        LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
+"""
         if conditions:
             sql += " WHERE " + " AND ".join(conditions)
 
@@ -118,7 +133,7 @@ class GroupRepository(BaseRepository):
         params["offset"] = filters.offset
         params["limit"] = filters.limit
         rows = self._fetch_some(sql, params, expanding=expanding)
-        return [self._map_group_detail(row) for row in rows]
+        return [GroupOverview.model_validate(row) for row in rows]
 
     def count(self, filters: GroupFilter) -> int:
         conditions, params, expanding = self._build_conditions(filters)

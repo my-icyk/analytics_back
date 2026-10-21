@@ -67,7 +67,7 @@ class GroupLookup(DomainModel):
 
 
 class GroupPage(DomainModel):
-    items: list[GroupDetail]
+    items: list[GroupOverview]
     total: int
 
 

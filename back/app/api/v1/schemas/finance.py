@@ -36,8 +36,12 @@ class GroupTypeDetails(GroupTypeRead):
 class GroupRead(Base):
     id: int
     name: str
-    division: DivisionRead
-    group_type: GroupTypeRead
+    division_id: int
+    division_name: str
+    group_type_id: int
+    group_type_name: str
+    rules_count: int
+    repartitions_count: int
 
 
 class GroupOverview(Base):
