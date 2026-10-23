@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     health,
     permissions,
     roles,
+    snapshots,
     specific,
     users,
 )
@@ -26,3 +27,4 @@ api_router.include_router(specific.router)
 api_router.include_router(divisions.router, prefix="/finance", tags=["finance"])
 api_router.include_router(groups.router, prefix="/finance", tags=["finance"])
 api_router.include_router(group_rules.router, prefix="/finance", tags=["finance"])
+api_router.include_router(snapshots.router, prefix="/finance", tags=["finance"])

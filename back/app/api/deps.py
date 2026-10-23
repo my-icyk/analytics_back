@@ -16,6 +16,7 @@ from app.repositories.group_type_repository import GroupTypeRepository
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_permission_repository import RolePermissionRepository
 from app.repositories.role_repository import RoleRepository
+from app.repositories.snapshot_repository import SnapshotRepository
 from app.repositories.specific_repository import SpecificRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.user_role_repository import UserRoleRepository
@@ -25,6 +26,7 @@ from app.services.counter_update_service import CounterUpdateService
 from app.services.finance_group_service import FinanceGroupService
 from app.services.finance_rule_service import FinanceRuleService
 from app.services.role_permission_service import RolePermissionService
+from app.services.snapshot import SnapshotService
 from app.services.specific_service import SpecificService
 from app.services.user_service import UserService
 
@@ -215,4 +217,16 @@ def get_finance_rule_service(
         group_repository=group_repository,
         group_rule_repository=group_rule_repository,
         group_rule_target_repository=group_rule_target_repository,
+    )
+
+
+def get_snapshot_repository(db: Session = Depends(get_db)) -> SnapshotRepository:
+    return SnapshotRepository(db)
+
+
+def get_snapshot_service(
+    snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
+) -> SnapshotService:
+    return SnapshotService(
+        snapshot_repository=snapshot_repository,
     )

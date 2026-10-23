@@ -72,6 +72,13 @@ class PermissionEnum(StrEnum):
     FINANCE_DEPARTMENT_REPARTITION_UPDATE = "finance:department_repartition:update"
     FINANCE_DEPARTMENT_REPARTITION_DELETE = "finance:department_repartition:delete"
 
+    FINANCE_SNAPSHOT_READ = "finance:snapshot:read"
+    FINANCE_SNAPSHOT_SAVE = "finance:snapshot:save"
+    FINANCE_SNAPSHOT_LOCK = "finance:snapshot:lock"
+    FINANCE_SNAPSHOT_UNLOCK = "finance:snapshot:unlock"
+    FINANCE_SNAPSHOT_UPDATE = "finance:snapshot:update"
+    FINANCE_SNAPSHOT_POST = "finance:snapshot:post"
+
 
 def has_permission(user: User, permission: PermissionEnum) -> bool:
     if user.is_admin:
