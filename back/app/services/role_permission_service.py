@@ -58,8 +58,8 @@ class RolePermissionService:
     def get_permissions(self) -> list[Permission]:
         return self.permission_repository.get_all()
 
-    def get_roles(self, name: str | None) -> list[Role]:
-        return self.role_repository.get_all(name=name)
+    def get_roles(self) -> list[Role]:
+        return self.role_repository.get_all()
 
     # User-Role-related methods
     def get_roles_by_user_id(self, user_id: int) -> list[Role]:

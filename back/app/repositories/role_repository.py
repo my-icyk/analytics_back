@@ -5,32 +5,38 @@ from app.repositories.base import BaseRepository
 class RoleRepository(BaseRepository):
     def get_by_id(self, role_id: int) -> Role | None:
         sql = """
-            SELECT *
-            FROM api.roles
-            WHERE id = :id
+            SELECT
+				main.id,
+				main.name,
+				main.description,
+				main.created_at,
+				users_count = (SELECT COUNT(*) FROM API.user_roles AS notmain WHERE notmain.role_id = main.id),
+				permissions_count = (SELECT COUNT(*) FROM API.role_permissions AS notmain WHERE notmain.role_id = main.id)
+            FROM api.roles AS main
+            WHERE
+                main.id = :id
         """
 
         row = self._fetch_one_or_none(sql, {"id": role_id})
 
         return Role.model_validate(row) if row else None
 
-    def get_all(self, name: str | None) -> list[Role]:
-        where = ""
-        params: dict = {}
-
-        if name:
-            where = "WHERE UPPER(name) LIKE UPPER(:name)"
-            params["name"] = f"%{name}%"
+    def get_all(self) -> list[Role]:
 
         rows = self._fetch_all(
-            f"""
-            SELECT id, name, description
-            FROM api.roles
-            {where}
-            ORDER BY id
+            """
+            SELECT
+				main.id,
+				main.name,
+				main.description,
+				main.created_at,
+				users_count = (SELECT COUNT(*) FROM API.user_roles AS notmain WHERE notmain.role_id = main.id),
+				permissions_count = (SELECT COUNT(*) FROM API.role_permissions AS notmain WHERE notmain.role_id = main.id)
+            FROM api.roles AS main
+            ORDER BY
+                main.name 
 
-            """,
-            {**params},
+            """
         )
 
         return [Role.model_validate(row) for row in rows]

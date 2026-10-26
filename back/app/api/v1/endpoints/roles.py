@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 
 from app.api.deps import (
     get_role_permission_service,
@@ -16,11 +16,10 @@ router = APIRouter(prefix="/roles", tags=["roles"])
 # NEED TO REFACTOR TO GET ALL ROLES
 @router.get("", response_model=list[RoleRead])
 def get_roles(
-    name: str | None = Query(None),
     service: RolePermissionService = Depends(get_role_permission_service),
     _=Depends(require_permission(PermissionEnum.ROLE_READ)),
 ):
-    items = service.get_roles(name=name)
+    items = service.get_roles()
     return items
 
 
