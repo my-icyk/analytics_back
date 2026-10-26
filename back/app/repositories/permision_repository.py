@@ -13,15 +13,6 @@ class PermissionRepository(BaseRepository):
 
         return Permission.model_validate(row) if row is not None else None
 
-    def get_by_name(self, name: str) -> Permission | None:
-        sql = """
-            SELECT *
-            FROM api.permissions
-            WHERE name = :name
-        """
-        row = self._fetch_one_or_none(sql, {"name": name})
-        return Permission.model_validate(row) if row is not None else None
-
     def get_all(self) -> list[Permission]:
         sql = """
             SELECT *

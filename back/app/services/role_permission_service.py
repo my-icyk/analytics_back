@@ -54,12 +54,6 @@ class RolePermissionService:
     def get_permissions_by_user_id(self, user_id: int) -> list[Permission]:
         return self.role_permission_repository.get_permissions_by_user_id(user_id)
 
-    def get_permission_by_name(self, name: str) -> Permission:
-        permission = self.permission_repository.get_by_name(name)
-        if permission is None:
-            raise NotFoundError("Permission", "name", name)
-        return permission
-
     def get_permissions(self) -> list[Permission]:
         return self.permission_repository.get_all()
 
