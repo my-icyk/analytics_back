@@ -126,23 +126,3 @@ def get_roles_by_user_id(
     _=Depends(require_permission(PermissionEnum.USER_ROLE_READ)),
 ):
     return service.get_roles_by_user_id(user_id)
-
-
-@router.post("/{user_id}/roles/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
-def assign_role_to_user(
-    user_id: int,
-    role_id: int,
-    service: RolePermissionService = Depends(get_role_permission_service),
-    _: int = Depends(require_permission(PermissionEnum.USER_ROLE_ASSIGN)),
-):
-    service.assign_role_to_user(user_id, role_id)
-
-
-@router.delete("/{user_id}/roles/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
-def revoke_role_from_user(
-    user_id: int,
-    role_id: int,
-    service: RolePermissionService = Depends(get_role_permission_service),
-    _: int = Depends(require_permission(PermissionEnum.USER_ROLE_REVOKE)),
-):
-    service.revoke_role_from_user(user_id, role_id)

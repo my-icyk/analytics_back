@@ -3,20 +3,6 @@ from app.repositories.base import BaseRepository
 
 
 class UserRoleRepository(BaseRepository):
-    def assign(self, user_id: int, role_id: int) -> None:
-        sql = """
-            INSERT INTO api.user_roles (user_id, role_id)
-            VALUES (:user_id, :role_id)
-        """
-        self._execute(sql, {"user_id": user_id, "role_id": role_id})
-
-    def revoke(self, user_id: int, role_id: int) -> None:
-        sql = """
-            DELETE FROM api.user_roles
-            WHERE user_id = :user_id AND role_id = :role_id
-        """
-        self._execute(sql, {"user_id": user_id, "role_id": role_id})
-
     def get_roles_by_user_id(self, user_id: int) -> list[Role]:
         sql = """
             SELECT r.*
