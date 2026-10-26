@@ -14,6 +14,7 @@ from app.services.role_permission_service import RolePermissionService
 router = APIRouter(prefix="/roles", tags=["roles"])
 
 
+# NEED TO REFACTOR TO GET ALL ROLES
 @router.get("", response_model=PaginatedResponse[RoleRead])
 def get_roles(
     name: str | None = Query(None),
