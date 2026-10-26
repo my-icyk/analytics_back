@@ -1,6 +1,10 @@
 from app.domains.permission import Permission
 from app.domains.role import Role
-from app.exceptions.exceptions import AlreadyExistsError, NotFoundError
+from app.exceptions.exceptions import (
+    AlreadyExistsError,
+    DeleteProtectedError,
+    NotFoundError,
+)
 from app.repositories.permision_repository import PermissionRepository
 from app.repositories.role_permission_repository import RolePermissionRepository
 from app.repositories.role_repository import RoleRepository
@@ -49,7 +53,12 @@ class RolePermissionService:
         return self.role_repository.update(role_id, role_name, role_description)
 
     def delete_role(self, role_id: int) -> None:
-        self.get_role_by_id(role_id)
+        role = self.get_role_by_id(role_id)
+        if role.users_count > 0:
+            raise DeleteProtectedError(
+                entity="Role",
+                reason=f"Role with id {role_id} has associated ({role.users_count}) users",
+            )
         return self.role_repository.delete(role_id)
 
     def get_permissions_by_user_id(self, user_id: int) -> list[Permission]:
