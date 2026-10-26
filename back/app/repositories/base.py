@@ -31,6 +31,19 @@ class BaseRepository:
     def __init__(self, db: Session):
         self.db = db
 
+    def _build_stmt(self, sql: str, params: dict[str, Any] | None = None):
+        stmt = text(sql)
+        list_params = [
+            bindparam(key, expanding=True)
+            for key, value in (params or {}).items()
+            if isinstance(value, (list, tuple))
+        ]
+        return stmt.bindparams(*list_params) if list_params else stmt
+
+    def _run(self, sql: str, params: dict[str, Any] | None = None):
+        params = params or {}
+        return self.db.execute(self._build_stmt(sql, params), params)
+
     def _fetch_one_or_none(self, sql: str, params: dict[str, Any]) -> dict | None:
         row = self.db.execute(text(sql), params).mappings().first()
         return dict(row) if row is not None else None
@@ -45,8 +58,8 @@ class BaseRepository:
         rows = self.db.execute(text(sql), params or {}).mappings().all()
         return [dict(r) for r in rows]
 
-    def _execute(self, sql: str, params: dict[str, Any]) -> None:
-        self.db.execute(text(sql), params)
+    def _execute(self, sql: str, params: dict[str, Any] | None = None) -> None:
+        self._run(sql, params)
 
     def _scalar(
         self,
