@@ -27,12 +27,3 @@ def lookup_permissions(
     _=Depends(require_permission(PermissionEnum.PERMISSION_READ)),
 ):
     return service.lookup_permissions(search)
-
-
-@router.get("/{permission_id}", response_model=PermissionRead)
-def get_permission(
-    permission_id: int,
-    service: RolePermissionService = Depends(get_role_permission_service),
-    _=Depends(require_permission(PermissionEnum.PERMISSION_READ)),
-):
-    return service.get_permission_by_id(permission_id)
