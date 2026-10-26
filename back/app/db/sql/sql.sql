@@ -103,3 +103,55 @@ BEGIN
 		u.username LIKE '%' + @search + '%'
     ORDER BY u.username;
 END
+
+
+
+CREATE OR ALTER PROCEDURE api.sp_lookup_permissions
+    @search NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 50
+		value = id,
+		label = name
+    FROM api.permissions 
+    WHERE
+		name LIKE '%' + @search + '%'
+    ORDER BY
+		name
+END
+
+
+CREATE OR ALTER PROCEDURE api.sp_lookup_roles
+    @search NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 50
+		value = id,
+		label = name
+    FROM api.roles 
+    WHERE
+		name LIKE '%' + @search + '%'
+    ORDER BY
+		name
+END
+
+
+CREATE OR ALTER PROCEDURE api.sp_lookup_groups
+    @search NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 50
+		value = id,
+		label = name
+    FROM finance.dimGroups
+    WHERE
+		name LIKE '%' + @search + '%'
+    ORDER BY
+		name
+END
