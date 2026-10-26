@@ -5,9 +5,13 @@ from app.repositories.base import BaseRepository
 class PermissionRepository(BaseRepository):
     def get_all(self) -> list[Permission]:
         sql = """
-            SELECT *
+            SELECT
+                id,
+                name
             FROM api.permissions
+            ORDER BY
+                name
         """
 
-        rows = self._fetch_all(sql, {})
+        rows = self._fetch_all(sql)
         return [Permission.model_validate(row) for row in rows]
