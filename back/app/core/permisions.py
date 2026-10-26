@@ -42,6 +42,9 @@ class PermissionEnum(StrEnum):
     PRODUCT_PRICES_READ = "product_prices:read"
     MANAGE_ADMIN_RIGHTS = "user:manage_admin"
 
+    AUTH_ROLE_ASSIGN_PERMISSIONS = "auth:role:assign_permissions"
+    AUTH_USER_ASSIGN_ROLES = "auth:user:assign_roles"
+
     FINANCE_DIVISION_CREATE = "finance:division:create"
     FINANCE_DIVISION_READ = "finance:division:read"
     FINANCE_DIVISION_UPDATE = "finance:division:update"

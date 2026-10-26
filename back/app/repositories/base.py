@@ -55,8 +55,7 @@ class BaseRepository:
         return dict(row)
 
     def _fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict]:
-        rows = self.db.execute(text(sql), params or {}).mappings().all()
-        return [dict(r) for r in rows]
+        return [dict(r) for r in self._run(sql, params).mappings().all()]
 
     def _execute(self, sql: str, params: dict[str, Any] | None = None) -> None:
         self._run(sql, params)

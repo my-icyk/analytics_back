@@ -15,3 +15,12 @@ class PermissionRepository(BaseRepository):
 
         rows = self._fetch_all(sql)
         return [Permission.model_validate(row) for row in rows]
+
+    def get_existing_ids(self, ids: list[int]) -> set[int]:
+        if not ids:
+            return set()
+        rows = self._fetch_all(
+            "SELECT id FROM api.permissions WHERE id IN :ids",
+            {"ids": ids},
+        )
+        return {row["id"] for row in rows}

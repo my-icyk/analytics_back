@@ -84,3 +84,27 @@ class RoleRepository(BaseRepository):
 
     def lookup(self, search: str) -> list[LookupResponse]:
         return self._lookup(LookupObjects.ROLES, search)
+
+    def assign_permissions(
+        self,
+        role_id: int,
+        permission_ids: list[int],
+    ) -> None:
+        self._execute(
+            "DELETE FROM api.role_permissions WHERE role_id = :role_id",
+            {"role_id": role_id},
+        )
+
+        if not permission_ids:
+            return
+
+        add_sql = """
+            INSERT INTO api.role_permissions (role_id, permission_id)
+            SELECT :role_id, id
+            FROM api.permissions
+            WHERE id IN :permission_ids
+            """
+        self._execute(
+            add_sql,
+            {"role_id": role_id, "permission_ids": permission_ids},
+        )

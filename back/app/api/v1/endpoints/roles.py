@@ -4,6 +4,7 @@ from app.api.deps import (
     get_role_permission_service,
     require_permission,
 )
+from app.api.v1.schemas.auth import SetRolePermissionsRequest
 from app.api.v1.schemas.common import PaginatedResponse
 from app.core.permisions import PermissionEnum
 from app.repositories.base import LookupResponse
@@ -104,3 +105,13 @@ def revoke_permission_from_role(
     _: int = Depends(require_permission(PermissionEnum.ROLE_PERMISSION_REVOKE)),
 ):
     service.revoke_permission_from_role(role_id, permission_id)
+
+
+@router.put("/{role_id}/permissions", status_code=status.HTTP_204_NO_CONTENT)
+def assign_role_permissions(
+    role_id: int,
+    payload: SetRolePermissionsRequest,
+    service: RolePermissionService = Depends(get_role_permission_service),
+    _: int = Depends(require_permission(PermissionEnum.AUTH_ROLE_ASSIGN_PERMISSIONS)),
+) -> None:
+    service.assign_permissions(role_id, payload.permission_ids)

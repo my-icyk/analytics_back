@@ -101,3 +101,15 @@ class RolePermissionService:
 
     def lookup_roles(self, search: str) -> list[LookupResponse]:
         return self.role_repository.lookup(search)
+
+    def assign_permissions(self, role_id: int, permission_ids: list[int]) -> None:
+        self.get_role_by_id(role_id)
+
+        ids = set(permission_ids)  # removes duplicates
+
+        existing = self.permission_repository.get_existing_ids(list(ids))
+        missing = ids - existing
+        if missing:
+            raise NotFoundError("Permission", "id", f"{sorted(missing)}")
+
+        self.role_repository.assign_permissions(role_id, list(ids))
