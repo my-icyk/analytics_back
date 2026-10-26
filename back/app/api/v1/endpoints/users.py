@@ -6,6 +6,7 @@ from app.api.deps import (
     get_user_service,
     require_permission,
 )
+from app.api.v1.schemas.auth import AssignUserRolesRequest
 from app.api.v1.schemas.user import MyUser, UserCreate, UserRead, UserUpdate
 from app.core.permisions import PermissionEnum
 from app.repositories.base import LookupResponse
@@ -126,3 +127,13 @@ def get_roles_by_user_id(
     _=Depends(require_permission(PermissionEnum.USER_ROLE_READ)),
 ):
     return service.get_roles_by_user_id(user_id)
+
+
+@router.put("/{user_id}/roles", status_code=status.HTTP_204_NO_CONTENT)
+def assign_roles_to_user(
+    user_id: int,
+    payload: AssignUserRolesRequest,
+    service: RolePermissionService = Depends(get_role_permission_service),
+    _: int = Depends(require_permission(PermissionEnum.AUTH_USER_ASSIGN_ROLES)),
+):
+    service.assign_roles(user_id, payload.role_ids)

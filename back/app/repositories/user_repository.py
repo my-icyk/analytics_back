@@ -115,3 +115,27 @@ class UserRepository(BaseRepository):
         """
         row = self._update(sql, {"user_id": user_id})
         return User.model_validate(row)
+
+    def assign_roles(
+        self,
+        user_id: int,
+        roles_ids: list[int],
+    ) -> None:
+        self._execute(
+            "DELETE FROM api.user_roles WHERE user_id = :user_id",
+            {"user_id": user_id},
+        )
+
+        if not roles_ids:
+            return
+
+        add_sql = """
+            INSERT INTO api.user_roles (user_id, role_id)
+            SELECT :user_id, id
+            FROM api.roles
+            WHERE id IN :roles_ids
+            """
+        self._execute(
+            add_sql,
+            {"user_id": user_id, "roles_ids": roles_ids},
+        )

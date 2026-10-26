@@ -105,3 +105,15 @@ class RoleRepository(BaseRepository):
             add_sql,
             {"role_id": role_id, "permission_ids": permission_ids},
         )
+
+    def get_existing_ids(self, ids: list[int]) -> set[int]:
+        if not ids:
+            return set()
+
+        sql = """
+            SELECT id
+            FROM api.roles
+            WHERE id IN :ids
+        """
+        rows = self._fetch_all(sql, {"ids": ids})
+        return {row["id"] for row in rows}

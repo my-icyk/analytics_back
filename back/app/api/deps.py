@@ -131,12 +131,14 @@ def get_role_permission_service(
         get_role_permission_repository
     ),
     user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
+    user_repository: UserRepository = Depends(get_user_repository),
 ) -> RolePermissionService:
     return RolePermissionService(
         role_repository=role_repository,
         permission_repository=permission_repository,
         role_permission_repository=role_permission_repository,
         user_role_repository=user_role_repository,
+        user_repository=user_repository,
     )
 
 
