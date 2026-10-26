@@ -9,9 +9,9 @@ class RoleRead(BaseModel):
 
 class RoleCreate(BaseModel):
     name: str
-    description: str | None
+    description: str | None = None
 
 
 class RoleUpdate(BaseModel):
     name: str
-    description: str | None
+    description: str | None = None
