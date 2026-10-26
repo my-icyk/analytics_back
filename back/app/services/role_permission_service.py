@@ -75,21 +75,6 @@ class RolePermissionService:
         return self.user_role_repository.user_has_role(user_id, role_id)
 
     # Role-Permission-related methods
-    def assign_permission_to_role(self, role_id: int, permission_id: int) -> None:
-        if self.role_permission_repository.role_has_permission(role_id, permission_id):
-            raise AlreadyExistsError(
-                "RolePermission", "role_id|permission_id", f"{role_id}|{permission_id}"
-            )
-        self.role_permission_repository.assign(role_id, permission_id)
-
-    def revoke_permission_from_role(self, role_id: int, permission_id: int) -> None:
-        if not self.role_permission_repository.role_has_permission(
-            role_id, permission_id
-        ):
-            raise NotFoundError(
-                "RolePermission", "role_id|permission_id", f"{role_id}|{permission_id}"
-            )
-        self.role_permission_repository.revoke(role_id, permission_id)
 
     def get_permissions_by_role_id(self, role_id: int) -> list[Permission]:
         return self.role_permission_repository.get_permissions_by_role_id(role_id)
