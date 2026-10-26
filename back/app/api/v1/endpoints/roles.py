@@ -7,14 +7,14 @@ from app.api.deps import (
 from app.api.v1.schemas.auth import AssignRolePermissionsRequest
 from app.core.permisions import PermissionEnum
 from app.schemas.permission_schema import PermissionRead
-from app.schemas.role_schema import RoleCreate, RoleRead, RoleUpdate
+from app.schemas.role_schema import RoleCreate, RoleListItem, RoleUpdate
 from app.services.role_permission_service import RolePermissionService
 
 router = APIRouter(prefix="/roles", tags=["roles"])
 
 
 # NEED TO REFACTOR TO GET ALL ROLES
-@router.get("", response_model=list[RoleRead])
+@router.get("", response_model=list[RoleListItem])
 def get_roles(
     service: RolePermissionService = Depends(get_role_permission_service),
     _=Depends(require_permission(PermissionEnum.ROLE_READ)),
@@ -23,7 +23,7 @@ def get_roles(
     return items
 
 
-@router.get("/{role_id}", response_model=RoleRead)
+@router.get("/{role_id}", response_model=RoleListItem)
 def get_role(
     role_id: int,
     service: RolePermissionService = Depends(get_role_permission_service),
@@ -32,7 +32,7 @@ def get_role(
     return service.get_role_by_id(role_id)
 
 
-@router.post("", response_model=RoleRead)
+@router.post("", response_model=RoleListItem)
 def create(
     payload: RoleCreate,
     service: RolePermissionService = Depends(get_role_permission_service),
@@ -41,7 +41,7 @@ def create(
     return service.create_role(payload.name, payload.description)
 
 
-@router.put("/{role_id}", response_model=RoleRead)
+@router.put("/{role_id}", response_model=RoleListItem)
 def update(
     role_id: int,
     payload: RoleUpdate,

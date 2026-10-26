@@ -8,6 +8,9 @@ class RoleRead(BaseModel):
     name: str
     description: str | None
     created_at: datetime
+
+
+class RoleListItem(RoleRead):
     users_count: int
     permissions_count: int
 

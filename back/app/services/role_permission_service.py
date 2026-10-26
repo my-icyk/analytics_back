@@ -1,5 +1,5 @@
 from app.domains.permission import Permission
-from app.domains.role import Role
+from app.domains.role import RoleWithCounts
 from app.exceptions.exceptions import (
     AlreadyExistsError,
     DeleteProtectedError,
@@ -28,7 +28,7 @@ class RolePermissionService:
         self.user_repository = user_repository
 
     # Role-related methods
-    def get_role_by_id(self, role_id: int) -> Role:
+    def get_role_by_id(self, role_id: int) -> RoleWithCounts:
         role = self.role_repository.get_by_id(role_id)
         if role is None:
             raise NotFoundError("Role", "role_id", str(role_id))
@@ -40,7 +40,9 @@ class RolePermissionService:
             raise NotFoundError("User", "user_id", str(user_id))
         return user
 
-    def create_role(self, role_name: str, role_description: str | None = None) -> Role:
+    def create_role(
+        self, role_name: str, role_description: str | None = None
+    ) -> RoleWithCounts:
         existing = self.role_repository.get_by_name(role_name)
         if existing is not None:
             raise AlreadyExistsError("Role", "role_name", role_name)
@@ -48,7 +50,7 @@ class RolePermissionService:
 
     def update_role(
         self, role_id: int, role_name: str, role_description: str | None = None
-    ) -> Role:
+    ) -> RoleWithCounts:
         self.get_role_by_id(role_id)
         return self.role_repository.update(role_id, role_name, role_description)
 
@@ -67,11 +69,11 @@ class RolePermissionService:
     def get_permissions(self) -> list[Permission]:
         return self.permission_repository.get_all()
 
-    def get_roles(self) -> list[Role]:
+    def get_roles(self) -> list[RoleWithCounts]:
         return self.role_repository.get_all()
 
     # User-Role-related methods
-    def get_roles_by_user_id(self, user_id: int) -> list[Role]:
+    def get_roles_by_user_id(self, user_id: int) -> list[RoleWithCounts]:
         return self.user_role_repository.get_roles_by_user_id(user_id)
 
     def user_has_role(self, user_id: int, role_id: int) -> bool:

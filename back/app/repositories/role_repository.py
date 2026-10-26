@@ -1,9 +1,9 @@
-from app.domains.role import Role
+from app.domains.role import RoleWithCounts
 from app.repositories.base import BaseRepository
 
 
 class RoleRepository(BaseRepository):
-    def get_by_id(self, role_id: int) -> Role | None:
+    def get_by_id(self, role_id: int) -> RoleWithCounts | None:
         sql = """
             SELECT
 				main.id,
@@ -19,9 +19,9 @@ class RoleRepository(BaseRepository):
 
         row = self._fetch_one_or_none(sql, {"id": role_id})
 
-        return Role.model_validate(row) if row else None
+        return RoleWithCounts.model_validate(row) if row else None
 
-    def get_all(self) -> list[Role]:
+    def get_all(self) -> list[RoleWithCounts]:
 
         rows = self._fetch_all(
             """
@@ -39,9 +39,9 @@ class RoleRepository(BaseRepository):
             """
         )
 
-        return [Role.model_validate(row) for row in rows]
+        return [RoleWithCounts.model_validate(row) for row in rows]
 
-    def create(self, name: str, description: str | None = None) -> Role:
+    def create(self, name: str, description: str | None = None) -> RoleWithCounts:
         sql = """
             INSERT INTO api.roles (name, description)
             OUTPUT INSERTED.*
@@ -49,9 +49,11 @@ class RoleRepository(BaseRepository):
         """
         role = self._fetch_one_or_none(sql, {"name": name, "description": description})
 
-        return Role.model_validate(role)
+        return RoleWithCounts.model_validate(role)
 
-    def update(self, role_id: int, name: str, description: str | None) -> Role:
+    def update(
+        self, role_id: int, name: str, description: str | None
+    ) -> RoleWithCounts:
         sql = """
             UPDATE api.roles SET
                 name = :name,
@@ -62,9 +64,9 @@ class RoleRepository(BaseRepository):
         role = self._fetch_one_or_none(
             sql, {"id": role_id, "name": name, "description": description}
         )
-        return Role.model_validate(role)
+        return RoleWithCounts.model_validate(role)
 
-    def get_by_name(self, name: str) -> Role | None:
+    def get_by_name(self, name: str) -> RoleWithCounts | None:
         sql = """
             SELECT *
             FROM api.roles
@@ -72,7 +74,7 @@ class RoleRepository(BaseRepository):
         """
         row = self._fetch_one_or_none(sql, {"name": name})
 
-        return Role.model_validate(row) if row else None
+        return RoleWithCounts.model_validate(row) if row else None
 
     def delete(self, role_id: int) -> None:
         sql = """
