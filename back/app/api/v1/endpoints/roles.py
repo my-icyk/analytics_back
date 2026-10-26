@@ -5,7 +5,6 @@ from app.api.deps import (
     require_permission,
 )
 from app.api.v1.schemas.auth import AssignRolePermissionsRequest
-from app.api.v1.schemas.common import PaginatedResponse
 from app.core.permisions import PermissionEnum
 from app.schemas.permission_schema import PermissionRead
 from app.schemas.role_schema import RoleCreate, RoleRead, RoleUpdate
@@ -15,19 +14,14 @@ router = APIRouter(prefix="/roles", tags=["roles"])
 
 
 # NEED TO REFACTOR TO GET ALL ROLES
-@router.get("", response_model=PaginatedResponse[RoleRead])
+@router.get("", response_model=list[RoleRead])
 def get_roles(
     name: str | None = Query(None),
-    limit: int = Query(10, le=200, ge=1),
-    page: int = Query(1, ge=1),
     service: RolePermissionService = Depends(get_role_permission_service),
     _=Depends(require_permission(PermissionEnum.ROLE_READ)),
 ):
-    items, total = service.get_roles(name=name, limit=limit, offset=(page - 1) * limit)
-    return PaginatedResponse(
-        data=items,
-        total=total,
-    )
+    items = service.get_roles(name=name)
+    return items
 
 
 @router.get("/{role_id}", response_model=RoleRead)

@@ -14,9 +14,7 @@ class RoleRepository(BaseRepository):
 
         return Role.model_validate(row) if row else None
 
-    def get_all(
-        self, name: str | None, limit: int, offset: int
-    ) -> tuple[list[Role], int]:
+    def get_all(self, name: str | None) -> list[Role]:
         where = ""
         params: dict = {}
 
@@ -30,17 +28,12 @@ class RoleRepository(BaseRepository):
             FROM api.roles
             {where}
             ORDER BY id
-            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+
             """,
-            {**params, "limit": limit, "offset": offset},
+            {**params},
         )
 
-        total = self._fetch_one(
-            f"SELECT COUNT(*) AS total FROM api.roles {where}",
-            params,
-        )["total"]
-
-        return [Role.model_validate(row) for row in rows], total
+        return [Role.model_validate(row) for row in rows]
 
     def create(self, name: str, description: str | None = None) -> Role:
         sql = """
