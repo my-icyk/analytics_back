@@ -1,5 +1,5 @@
 from app.domains.role import Role
-from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
+from app.repositories.base import BaseRepository
 
 
 class RoleRepository(BaseRepository):
@@ -81,9 +81,6 @@ class RoleRepository(BaseRepository):
             WHERE id = :id
         """
         self._execute(sql, {"id": role_id})
-
-    def lookup(self, search: str) -> list[LookupResponse]:
-        return self._lookup(LookupObjects.ROLES, search)
 
     def assign_permissions(
         self,

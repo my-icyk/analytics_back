@@ -7,7 +7,6 @@ from app.api.deps import (
 from app.api.v1.schemas.auth import SetRolePermissionsRequest
 from app.api.v1.schemas.common import PaginatedResponse
 from app.core.permisions import PermissionEnum
-from app.repositories.base import LookupResponse
 from app.schemas.permission_schema import PermissionRead
 from app.schemas.role_schema import RoleCreate, RoleRead, RoleUpdate
 from app.services.role_permission_service import RolePermissionService
@@ -28,15 +27,6 @@ def get_roles(
         data=items,
         total=total,
     )
-
-
-@router.get("/lookup", response_model=list[LookupResponse])
-def lookup_roles(
-    search: str = Query(...),
-    service: RolePermissionService = Depends(get_role_permission_service),
-    _=Depends(require_permission(PermissionEnum.ROLE_READ)),
-):
-    return service.lookup_roles(search)
 
 
 @router.get("/{role_id}", response_model=RoleRead)
