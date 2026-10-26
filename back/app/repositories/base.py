@@ -21,7 +21,6 @@ class LookupResponse(BaseModel):
 
 
 class LookupObjects(Enum):
-    PERMISSIONS = "api.sp_lookup_permissions"
     USERS = "api.sp_lookup_users"
     ROLES = "api.sp_lookup_roles"
     DEPARTMENTS = "api.sp_lookup_departments"

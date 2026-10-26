@@ -99,8 +99,5 @@ class RolePermissionService:
             role_id, permission_id
         )
 
-    def lookup_permissions(self, search: str) -> list[LookupResponse]:
-        return self.permission_repository.lookup(search)
-
     def lookup_roles(self, search: str) -> list[LookupResponse]:
         return self.role_repository.lookup(search)
