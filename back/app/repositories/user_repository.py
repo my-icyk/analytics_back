@@ -88,7 +88,7 @@ class UserRepository(BaseRepository):
             SELECT *
             FROM api.users
         """
-        rows = self._fetch_all(sql, {})
+        rows = self._fetch_all(sql)
         return [User.model_validate(row) for row in rows]
 
     def lookup_users(self, search: str) -> list[LookupResponse]:

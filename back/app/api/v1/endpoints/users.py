@@ -38,13 +38,13 @@ def get_me(
     )
 
 
-@router.get("")
+@router.get("", response_model=list[UserRead])
 def get_all_users(
     service: UserService = Depends(get_user_service),
     _: int = Depends(require_permission(PermissionEnum.USER_READ)),
 ):
 
-    return {"data": service.get_all_users(), "total": 100}
+    return service.get_all_users()
 
 
 @router.get("/lookup", response_model=list[LookupResponse])
