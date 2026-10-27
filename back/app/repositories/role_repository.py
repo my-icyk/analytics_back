@@ -41,15 +41,14 @@ class RoleRepository(BaseRepository):
 
         return [RoleWithCounts.model_validate(row) for row in rows]
 
-    def create(self, name: str, description: str | None = None) -> RoleWithCounts:
+    def create(self, name: str, description: str | None = None) -> int:
         sql = """
             INSERT INTO api.roles (name, description)
-            OUTPUT INSERTED.*
+            OUTPUT INSERTED.id
             VALUES (:name, :description)
         """
-        role = self._fetch_one_or_none(sql, {"name": name, "description": description})
-
-        return RoleWithCounts.model_validate(role)
+        id = self._scalar(sql, {"name": name, "description": description})
+        return id
 
     def update(self, role_id: int, name: str, description: str | None) -> None:
         sql = """

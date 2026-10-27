@@ -40,9 +40,7 @@ class RolePermissionService:
             raise NotFoundError("User", "user_id", str(user_id))
         return user
 
-    def create_role(
-        self, role_name: str, role_description: str | None = None
-    ) -> RoleWithCounts:
+    def create_role(self, role_name: str, role_description: str | None = None) -> int:
         existing = self.role_repository.get_by_name(role_name)
         if existing is not None:
             raise AlreadyExistsError("Role", "role_name", role_name)
