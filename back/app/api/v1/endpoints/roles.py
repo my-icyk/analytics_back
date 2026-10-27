@@ -41,14 +41,14 @@ def create(
     return service.create_role(payload.name, payload.description)
 
 
-@router.put("/{role_id}", response_model=RoleListItem)
+@router.put("/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
 def update(
     role_id: int,
     payload: RoleUpdate,
     service: RolePermissionService = Depends(get_role_permission_service),
     _=Depends(require_permission(PermissionEnum.ROLE_UPDATE)),
 ):
-    return service.update_role(role_id, payload.name, payload.description)
+    service.update_role(role_id, payload.name, payload.description)
 
 
 @router.delete("/{role_id}", status_code=status.HTTP_204_NO_CONTENT)

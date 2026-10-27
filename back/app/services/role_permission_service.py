@@ -50,9 +50,9 @@ class RolePermissionService:
 
     def update_role(
         self, role_id: int, role_name: str, role_description: str | None = None
-    ) -> RoleWithCounts:
+    ) -> None:
         self.get_role_by_id(role_id)
-        return self.role_repository.update(role_id, role_name, role_description)
+        self.role_repository.update(role_id, role_name, role_description)
 
     def delete_role(self, role_id: int) -> None:
         role = self.get_role_by_id(role_id)

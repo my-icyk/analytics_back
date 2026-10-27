@@ -51,20 +51,15 @@ class RoleRepository(BaseRepository):
 
         return RoleWithCounts.model_validate(role)
 
-    def update(
-        self, role_id: int, name: str, description: str | None
-    ) -> RoleWithCounts:
+    def update(self, role_id: int, name: str, description: str | None) -> None:
         sql = """
             UPDATE api.roles SET
                 name = :name,
                 description = :description
-            OUTPUT INSERTED.*
+            OUTPUT INSERTED.id
             WHERE id = :id
         """
-        role = self._fetch_one_or_none(
-            sql, {"id": role_id, "name": name, "description": description}
-        )
-        return RoleWithCounts.model_validate(role)
+        self._execute(sql, {"id": role_id, "name": name, "description": description})
 
     def get_by_name(self, name: str) -> RoleWithCounts | None:
         sql = """
