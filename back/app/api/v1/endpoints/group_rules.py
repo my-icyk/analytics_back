@@ -78,7 +78,7 @@ def delete_rule(
 def get_targets(
     rule_id: int,
     service: FinanceRuleService = Depends(get_finance_rule_service),
-    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_READ)),
+    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_TARGET_READ)),
 ):
     return service.get_targets(rule_id)
 
@@ -88,7 +88,7 @@ def assign_target(
     rule_id: int,
     payload: TargetCreate,
     service: FinanceRuleService = Depends(get_finance_rule_service),
-    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_CREATE)),
+    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_TARGET_CREATE)),
 ):
     id = service.assign_target(
         rule_id=rule_id,
@@ -105,7 +105,7 @@ def update_target(
     target_id: int,
     payload: TargetUpdate,
     service: FinanceRuleService = Depends(get_finance_rule_service),
-    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_UPDATE)),
+    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_TARGET_UPDATE)),
 ):
     service.update_target(
         id=target_id,
@@ -121,6 +121,6 @@ def remove_target(
     rule_id: int,
     target_id: int,
     service: FinanceRuleService = Depends(get_finance_rule_service),
-    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_DELETE)),
+    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_TARGET_DELETE)),
 ):
     service.remove_target(rule_id, target_id)
