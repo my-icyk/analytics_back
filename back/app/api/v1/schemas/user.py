@@ -32,3 +32,12 @@ class UserCreate(Base):
     email: str | None = None
     password: str = Field(..., min_length=8, max_length=128)
     name: str
+
+
+class PasswordChange(Base):
+    current_password: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class PasswordReset(Base):
+    new_password: str = Field(..., min_length=8, max_length=128)

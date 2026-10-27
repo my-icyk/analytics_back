@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 
 from app.exceptions.exceptions import (
     AlreadyExistsError,
+    BadRequestError,
     DeleteProtectedError,
     ForbiddenError,
     InactiveUserError,
@@ -94,4 +95,11 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=400,
             content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(BadRequestError)
+    def bad_request_error_handler(_request: Request, exc: BadRequestError):
+        return JSONResponse(
+            status_code=400,
+            content={"detail": str(exc.message)},
         )

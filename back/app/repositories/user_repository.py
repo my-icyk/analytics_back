@@ -57,6 +57,16 @@ class UserRepository(BaseRepository):
         assert row is not None, "INSERT with OUTPUT should always return a row"
         return User.model_validate(row)
 
+    def update_password(self, user_id: int, hashed_password: str) -> None:
+        self._execute(
+            """
+            UPDATE api.users
+            SET hashed_password = :hashed_password
+            WHERE id = :id
+            """,
+            {"id": user_id, "hashed_password": hashed_password},
+        )
+
     def update_user(
         self, user_id: int, username: str, email: str | None, is_active: bool, name: str
     ) -> User:

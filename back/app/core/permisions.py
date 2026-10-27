@@ -18,6 +18,7 @@ class PermissionEnum(StrEnum):
     USER_READ = "user:read"
     USER_UPDATE = "user:update"
     USER_DELETE = "user:delete"
+    AUTH_USER_CHANGE_PASSWORD = "auth:user:change_password"
     # roles
     ROLE_CREATE = "role:create"
     ROLE_READ = "role:read"

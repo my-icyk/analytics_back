@@ -7,7 +7,14 @@ from app.api.deps import (
     require_permission,
 )
 from app.api.v1.schemas.auth import AssignUserRolesRequest
-from app.api.v1.schemas.user import MyUser, UserCreate, UserRead, UserUpdate
+from app.api.v1.schemas.user import (
+    MyUser,
+    PasswordChange,
+    PasswordReset,
+    UserCreate,
+    UserRead,
+    UserUpdate,
+)
 from app.core.permisions import PermissionEnum
 from app.repositories.base import LookupResponse
 from app.schemas.role_schema import RoleRead
@@ -137,3 +144,26 @@ def assign_roles_to_user(
     _: int = Depends(require_permission(PermissionEnum.AUTH_USER_ASSIGN_ROLES)),
 ):
     service.assign_roles(user_id, payload.role_ids)
+
+
+@router.put("/users/me/password", status_code=204)
+def change_my_password(
+    body: PasswordChange,
+    current_user_id: int = Depends(get_current_user_id),
+    service: UserService = Depends(get_user_service),
+) -> None:
+    service.change_own_password(
+        current_user_id, body.current_password, body.new_password
+    )
+
+
+@router.put("/users/{user_id}/password", status_code=204)
+def reset_user_password(
+    user_id: int,
+    body: PasswordReset,
+    current_user_id: int = Depends(
+        require_permission(PermissionEnum.AUTH_USER_ASSIGN_ROLES)
+    ),
+    service: UserService = Depends(get_user_service),
+) -> None:
+    service.reset_password(current_user_id, user_id, body.new_password)

@@ -29,6 +29,12 @@ class ForbiddenError(Exception):
         super().__init__(self.message)
 
 
+class BadRequestError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
 class RoleNotFoundError(Exception):
     def __init__(self, role_id: int):
         self.role_id = role_id
