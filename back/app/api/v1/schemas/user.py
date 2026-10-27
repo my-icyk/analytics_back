@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import Field
 
 from app.api.v1.schemas.finance import Base
@@ -23,6 +25,9 @@ class MyUser(Base):
     id: int
     username: str
     is_admin: bool
+    created_at: datetime
+    email: str | None = None
+    name: str
     roles: list[str]
     permissions: list[str]
 

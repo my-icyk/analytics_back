@@ -40,6 +40,9 @@ def get_me(
         id=user.id,
         username=user.username,
         is_admin=user.is_admin,
+        created_at=user.created_at,
+        email=user.email,
+        name=user.name,
         roles=[role.name for role in roles],
         permissions=[permission.name for permission in permissions],
     )
@@ -146,7 +149,7 @@ def assign_roles_to_user(
     service.assign_roles(user_id, payload.role_ids)
 
 
-@router.put("/users/me/password", status_code=204)
+@router.put("/me/password", status_code=204)
 def change_my_password(
     body: PasswordChange,
     current_user_id: int = Depends(get_current_user_id),
@@ -157,7 +160,7 @@ def change_my_password(
     )
 
 
-@router.put("/users/{user_id}/password", status_code=204)
+@router.put("/{user_id}/password", status_code=204)
 def reset_user_password(
     user_id: int,
     body: PasswordReset,
