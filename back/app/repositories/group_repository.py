@@ -1,9 +1,9 @@
 from app.domains.finance import (
     Group,
     GroupDetail,
-    GroupFilter,
     GroupOverview,
 )
+from app.filters.finance import GroupFilter
 from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
@@ -132,7 +132,7 @@ class GroupRepository(BaseRepository):
         """
         params["offset"] = filters.offset
         params["limit"] = filters.limit
-        rows = self._fetch_some(sql, params, expanding=expanding)
+        rows = self._fetch_some(sql, filters.model_dump(), expanding=expanding)
         return [GroupOverview.model_validate(row) for row in rows]
 
     def count(self, filters: GroupFilter) -> int:
@@ -140,7 +140,7 @@ class GroupRepository(BaseRepository):
         sql = "SELECT COUNT(*) FROM finance.dimGroups g"
         if conditions:
             sql += " WHERE " + " AND ".join(conditions)
-        return self._scalar(sql, params)
+        return self._scalar(sql, filters.model_dump())
 
     def create(self, name: str, group_type_id: int, division_id: int) -> int:
         params = {

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Query, status
 
 from app.api.deps import (
@@ -19,7 +21,7 @@ from app.api.v1.schemas.finance import (
     RuleRead,
 )
 from app.core.permisions import PermissionEnum
-from app.domains.finance import GroupFilter
+from app.filters.finance import GroupFilter
 from app.repositories.base import LookupResponse
 from app.services.finance_group_service import FinanceGroupService
 from app.services.finance_rule_service import FinanceRuleService
@@ -63,22 +65,10 @@ def lookup_groups(
 
 @router.get("", response_model=PaginatedResponse[GroupRead])
 def get_groups(
-    search: str | None = Query(None),
-    division_ids: list[int] | None = Query(None),
-    group_type_ids: list[int] | None = Query(None),
-    limit: int = Query(10, le=200, ge=1),
-    page: int = Query(0, ge=0),
+    filters: Annotated[GroupFilter, Query()],
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
-
-    filters = GroupFilter(
-        search=search,
-        division_ids=division_ids,
-        group_type_ids=group_type_ids,
-        limit=limit,
-        offset=(page - 1) * limit,
-    )
 
     rows = service.get_groups_page(filters)
 

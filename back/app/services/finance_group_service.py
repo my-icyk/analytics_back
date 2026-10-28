@@ -6,7 +6,6 @@ from app.domains.finance import (
     Division,
     DivisionDetail,
     Group,
-    GroupFilter,
     GroupOverview,
     GroupPage,
 )
@@ -16,7 +15,7 @@ from app.exceptions.exceptions import (
     DeleteProtectedError,
     NotFoundError,
 )
-from app.filters.finance import DepartmentRepartitionFilter
+from app.filters.finance import DepartmentRepartitionFilter, GroupFilter
 from app.read_models.finance import DepartmentRepartitionDetails
 from app.repositories.base import LookupResponse
 from app.repositories.department_repartition import DepartmentRepartitionRepository

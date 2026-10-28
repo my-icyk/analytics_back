@@ -9,4 +9,3 @@ router.include_router(
     prefix="/department-repartitions",
     tags=["finance"],
 )
-router.include_router(department_repartitions.router, prefix="/divisions")
