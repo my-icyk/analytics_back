@@ -74,7 +74,8 @@ class DepartmentRepartitionRepository(BaseRepository):
                 department_name = d.name,
                 is_active = op.is_active,
                 main.valid_from,
-                main.valid_to
+                main.valid_to,
+                main.group_id
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
             outer apply (
