@@ -56,21 +56,11 @@ class BaseRepository:
     def _fetch_all(self, sql: str, params: dict[str, Any] | None = None) -> list[dict]:
         return [dict(r) for r in self._run(sql, params).mappings().all()]
 
+    def _scalar(self, sql: str, params: dict[str, Any] | None = None) -> Any:
+        return self._run(sql, params).scalar()
+
     def _execute(self, sql: str, params: dict[str, Any] | None = None) -> None:
         self._run(sql, params)
-
-    def _scalar(
-        self,
-        sql: str,
-        params: dict[str, Any] | None = None,
-        expanding: list[str] | None = None,
-    ) -> Any:
-        stmt = text(sql)
-        if expanding:
-            stmt = stmt.bindparams(
-                *[bindparam(name, expanding=True) for name in expanding]
-            )
-        return self.db.execute(stmt, params or {}).scalar()
 
     def _update(self, sql: str, params: dict[str, Any]) -> dict:
         row = self._fetch_one_or_none(sql, params)

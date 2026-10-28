@@ -140,7 +140,7 @@ class GroupRepository(BaseRepository):
         sql = "SELECT COUNT(*) FROM finance.dimGroups g"
         if conditions:
             sql += " WHERE " + " AND ".join(conditions)
-        return self._scalar(sql, params, expanding=expanding)
+        return self._scalar(sql, params)
 
     def create(self, name: str, group_type_id: int, division_id: int) -> int:
         params = {
