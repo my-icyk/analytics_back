@@ -13,7 +13,7 @@ from app.services.finance_group_service import FinanceGroupService
 router = APIRouter()
 
 
-@router.get("/", response_model=PaginatedResponse[DepartmentRepartitionDetails])
+@router.get("", response_model=PaginatedResponse[DepartmentRepartitionDetails])
 def list_department_repartitions(
     filters: Annotated[DepartmentRepartitionFilter, Query()],
     caller: User = Depends(
