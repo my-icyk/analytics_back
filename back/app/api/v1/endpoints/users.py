@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 
 from app.api.deps import (
-    get_current_user_id,
+    get_current_user,
     get_role_permission_service,
     get_user_service,
     require_permission,
@@ -16,6 +16,7 @@ from app.api.v1.schemas.user import (
     UserUpdate,
 )
 from app.core.permisions import PermissionEnum
+from app.domains.user import User
 from app.repositories.base import LookupResponse
 from app.schemas.role_schema import RoleRead
 from app.services.role_permission_service import RolePermissionService
@@ -26,23 +27,21 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/me", response_model=MyUser)
 def get_me(
-    user_service: UserService = Depends(get_user_service),
     role_permission_service: RolePermissionService = Depends(
         get_role_permission_service
     ),
-    user_id: int = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
 ):
-    user = user_service.get_user(user_id)
-    # TODO: De clarificat de ce nu se convertesc bine
-    roles = role_permission_service.get_roles_by_user_id(user_id)
-    permissions = role_permission_service.get_permissions_by_user_id(user_id)
+    # TODO: NU ESTE CORECT DE STARNS AICI, PROBABIL SERVICE TREBUIE SA FACA ASTA
+    roles = role_permission_service.get_roles_by_user_id(current_user.id)
+    permissions = role_permission_service.get_permissions_by_user_id(current_user.id)
     return MyUser(
-        id=user.id,
-        username=user.username,
-        is_admin=user.is_admin,
-        created_at=user.created_at,
-        email=user.email,
-        name=user.name,
+        id=current_user.id,
+        username=current_user.username,
+        is_admin=current_user.is_admin,
+        created_at=current_user.created_at,
+        email=current_user.email,
+        name=current_user.name,
         roles=[role.name for role in roles],
         permissions=[permission.name for permission in permissions],
     )
@@ -152,21 +151,19 @@ def assign_roles_to_user(
 @router.put("/me/password", status_code=204)
 def change_my_password(
     body: PasswordChange,
-    current_user_id: int = Depends(get_current_user_id),
+    current_user: User = Depends(get_current_user),
     service: UserService = Depends(get_user_service),
 ) -> None:
-    service.change_own_password(
-        current_user_id, body.current_password, body.new_password
-    )
+    service.change_own_password(current_user, body.current_password, body.new_password)
 
 
 @router.put("/{user_id}/password", status_code=204)
 def reset_user_password(
     user_id: int,
     body: PasswordReset,
-    current_user_id: int = Depends(
+    current_user: User = Depends(
         require_permission(PermissionEnum.AUTH_USER_ASSIGN_ROLES)
     ),
     service: UserService = Depends(get_user_service),
 ) -> None:
-    service.reset_password(current_user_id, user_id, body.new_password)
+    service.reset_password(current_user, user_id, body.new_password)

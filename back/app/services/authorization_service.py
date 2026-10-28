@@ -1,4 +1,5 @@
 from app.core.permisions import PermissionEnum
+from app.domains.user import User
 from app.exceptions.exceptions import ForbiddenError
 from app.repositories.authorization_repository import AuthorizationRepository
 
@@ -18,6 +19,6 @@ class AuthorizationService:
             return True
         return self.authorization_repo.user_has_permission(user_id, permission.value)
 
-    def require_permission(self, user_id: int, permission: PermissionEnum) -> None:
-        if not self.user_has_permission(user_id, permission):
+    def require_permission(self, user: User, permission: PermissionEnum) -> None:
+        if not self.user_has_permission(user.id, permission):
             raise ForbiddenError(f"Missing permission: {permission.value}")

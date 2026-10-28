@@ -5,7 +5,29 @@ from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
 class DepartmentRepartitionRepository(BaseRepository):
-    # TODO: De refacut codul acesta
+    def get_all(self):
+        sql = """
+            select 
+                main.id,
+                main.department_id,
+                department_name = d.name,
+                main.group_id,
+                main.valid_from,
+                main.valid_to
+            from finance.factDepartmentsRepartition AS main
+            JOIN finance.dimDepartments d ON d.id = main.department_id
+        """
+        rows = self._fetch_all(sql)
+        return [DepartmentRepartition.model_validate(row) for row in rows]
+
+    def count(self) -> int:
+        sql = """
+            select
+                count(*) 
+            from finance.factDepartmentsRepartition
+        """
+        return self._scalar(sql)
+
     def get_by_id(self, id: int) -> DepartmentRepartition:
         sql = """
             select 

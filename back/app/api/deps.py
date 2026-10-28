@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.permisions import PermissionEnum
 from app.db.database import get_db
+from app.domains.user import User
 from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.authorization_repository import AuthorizationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
@@ -166,27 +167,27 @@ def require_permission(permission: PermissionEnum):
         authorization_service: AuthorizationService = Depends(
             get_authorization_service
         ),
-    ) -> int:
+    ) -> User:
         if token is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Not authenticated",
             )
-        user_id = auth_service.authenticate_user(token)
+        user = auth_service.authenticate_user(token)
 
         authorization_service.require_permission(
-            user_id,
+            user,
             permission,
         )
-        return user_id
+        return user
 
     return permission_dependency
 
 
-def get_current_user_id(
+def get_current_user(
     token: str = Depends(oauth2_scheme),
     auth_service: AuthenticationService = Depends(get_auth_service),
-) -> int:
+) -> User:
     return auth_service.authenticate_user(token)
 
 

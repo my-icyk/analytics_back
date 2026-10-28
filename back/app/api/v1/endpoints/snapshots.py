@@ -12,6 +12,7 @@ from app.domains.snapshot import (
     SnapshotResults,
     SnapshotSave,
 )
+from app.domains.user import User
 from app.services.snapshot import SnapshotService
 
 router = APIRouter(prefix="/snapshots")
@@ -56,39 +57,39 @@ def get_snapshot_history(
 def save_snapshot(
     payload: SnapshotSave,
     service: SnapshotService = Depends(get_snapshot_service),
-    user_id=Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_SAVE)),
+    user: User = Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_SAVE)),
 ):
-    return service.save_snapshot(payload.end_of_month, user_id)
+    return service.save_snapshot(payload.end_of_month, user)
 
 
 @router.post("/{snapshot_id}/lock", status_code=status.HTTP_204_NO_CONTENT)
 def lock_snapshot(
     snapshot_id: int,
     service: SnapshotService = Depends(get_snapshot_service),
-    user_id=Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_LOCK)),
+    user: User = Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_LOCK)),
     note: str = Body("", embed=True),
 ):
-    service.lock_snapshot(snapshot_id, user_id, note)
+    service.lock_snapshot(snapshot_id, user, note)
 
 
 @router.post("/{snapshot_id}/unlock", status_code=status.HTTP_204_NO_CONTENT)
 def unlock_snapshot(
     snapshot_id: int,
     service: SnapshotService = Depends(get_snapshot_service),
-    user_id=Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_UNLOCK)),
+    user: User = Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_UNLOCK)),
     note: str = Body("", embed=True),
 ):
-    service.unlock_snapshot(snapshot_id, user_id, note)
+    service.unlock_snapshot(snapshot_id, user, note)
 
 
 @router.post("/{snapshot_id}/update", status_code=status.HTTP_204_NO_CONTENT)
 def update_snapshot(
     snapshot_id: int,
     service: SnapshotService = Depends(get_snapshot_service),
-    user_id=Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_UPDATE)),
+    user: User = Depends(require_permission(PermissionEnum.FINANCE_SNAPSHOT_UPDATE)),
     note: str = Body("", embed=True),
 ):
-    service.update_snapshot(snapshot_id, user_id, note)
+    service.update_snapshot(snapshot_id, user, note)
 
 
 @router.patch(

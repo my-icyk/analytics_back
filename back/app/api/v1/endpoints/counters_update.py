@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query, status
 from app.api.deps import get_counter_update_service, require_permission
 from app.api.v1.schemas.common import PaginatedResponse
 from app.core.permisions import PermissionEnum
+from app.domains.user import User
 from app.schemas.counter_update_schema import (
     CounterExceptionsCreate,
     CounterExceptionsUpdate,
@@ -65,10 +66,10 @@ def get_by_id(
 def create(
     data: CounterExceptionsCreate,
     service: CounterUpdateService = Depends(get_counter_update_service),
-    user_id=Depends(require_permission(PermissionEnum.COUNTER_UPDATE_CREATE)),
+    user: User = Depends(require_permission(PermissionEnum.COUNTER_UPDATE_CREATE)),
 ):
 
-    service.create(data, user_id=user_id)
+    service.create(data, user_id=user.id)
 
 
 @exceptions_router.put("/{exception_id}", status_code=status.HTTP_204_NO_CONTENT)

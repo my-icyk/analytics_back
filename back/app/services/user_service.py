@@ -72,17 +72,15 @@ class UserService:
         return self.user_repository.lookup_users(search)
 
     def change_own_password(
-        self, user_id: int, current_password: str, new_password: str
+        self, user: User, current_password: str, new_password: str
     ) -> None:
-        user = self._get_active_user(user_id)
 
         if not verify_password(current_password, user.hashed_password):
             raise ForbiddenError("Current password is incorrect")
 
         self._set_password(user, new_password)
 
-    def reset_password(self, caller_id: int, user_id: int, new_password: str) -> None:
-        caller = self._get_active_user(caller_id)
+    def reset_password(self, caller: User, user_id: int, new_password: str) -> None:
         if not caller.is_admin:
             raise ForbiddenError("You can't reset this user's password")
 

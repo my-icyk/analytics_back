@@ -13,6 +13,7 @@ from app.core.security import (
     hash_token,
     verify_password,
 )
+from app.domains.user import User
 from app.exceptions.exceptions import (
     InactiveUserError,
     InvalidCredentialsError,
@@ -91,14 +92,21 @@ class AuthenticationService:
         if stored is not None and stored["revoked_at"] is None:
             self.auth_repo.revoke(stored["id"])
 
-    def authenticate_user(self, token: str) -> int:
-        """Return the user ID extracted from the access token."""
+    def authenticate_user(self, token: str) -> User:
+        """Return the active user for a valid access token."""
         payload = decode_access_token(token)
         if payload is None:
             raise InvalidTokenError()
 
-        user_id = payload.get("sub")
-        if user_id is None:
-            raise InvalidTokenError()
+        try:
+            user_id = int(payload["sub"])
+        except (KeyError, TypeError, ValueError):
+            raise InvalidTokenError() from None
 
-        return user_id
+        user = self.user_repo.get_by_id(user_id)
+        if user is None:
+            raise InvalidTokenError()
+        if not user.is_active:
+            raise InactiveUserError(user_id)
+
+        return user

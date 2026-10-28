@@ -66,7 +66,7 @@ def delete(
 def get_permissions_by_role_id(
     role_id: int,
     service: RolePermissionService = Depends(get_role_permission_service),
-    _: int = Depends(require_permission(PermissionEnum.ROLE_PERMISSION_READ)),
+    _=Depends(require_permission(PermissionEnum.ROLE_PERMISSION_READ)),
 ):
     return service.get_permissions_by_role_id(role_id)
 
@@ -76,6 +76,6 @@ def assign_role_permissions(
     role_id: int,
     payload: AssignRolePermissionsRequest,
     service: RolePermissionService = Depends(get_role_permission_service),
-    _: int = Depends(require_permission(PermissionEnum.AUTH_ROLE_ASSIGN_PERMISSIONS)),
+    _=Depends(require_permission(PermissionEnum.AUTH_ROLE_ASSIGN_PERMISSIONS)),
 ) -> None:
     service.assign_permissions(role_id, payload.permission_ids)
