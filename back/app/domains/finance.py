@@ -14,15 +14,6 @@ class DivisionDetail(DomainModel):
     group_count: int
 
 
-class DepartmentRepartition(DomainModel):
-    id: int
-    department_id: int
-    department_name: str
-    valid_from: date
-    valid_to: date | None
-    is_active: bool
-
-
 class GroupFilter(DomainModel):
     search: str | None = None
     division_ids: list[int] | None = None

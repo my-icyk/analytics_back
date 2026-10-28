@@ -3,7 +3,6 @@ from datetime import date
 from app.api.v1.schemas.finance import GroupTypeDetails
 from app.domains.finance import (
     Deparment,
-    DepartmentRepartition,
     Division,
     DivisionDetail,
     Group,
@@ -11,11 +10,14 @@ from app.domains.finance import (
     GroupOverview,
     GroupPage,
 )
+from app.domains.user import User
 from app.exceptions.exceptions import (
     AlreadyExistsError,
     DeleteProtectedError,
     NotFoundError,
 )
+from app.filters.finance import DepartmentRepartitionFilter
+from app.read_models.finance import DepartmentRepartitionDetails
 from app.repositories.base import LookupResponse
 from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
@@ -152,7 +154,14 @@ class FinanceGroupService:
             )
         self.division_repository.delete(id)
 
-    def get_department_repartition(self, group_id: int) -> list[DepartmentRepartition]:
+    def list_department_repartitions(
+        self, caller: User, filters: DepartmentRepartitionFilter
+    ) -> tuple[list[DepartmentRepartitionDetails], int]:
+        return self.department_repartition_repository.get_all(filters)
+
+    def get_department_repartition(
+        self, group_id: int
+    ) -> list[DepartmentRepartitionDetails]:
         self.get_group(group_id)
         return self.department_repartition_repository.get_by_group_id(group_id)
 

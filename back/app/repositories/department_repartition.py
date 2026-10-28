@@ -1,34 +1,52 @@
 from datetime import date
 
-from app.domains.finance import Deparment, DepartmentRepartition
+from app.domains.finance import Deparment
+from app.filters.finance import DepartmentRepartitionFilter
+from app.read_models.finance import DepartmentRepartitionDetails
 from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
 class DepartmentRepartitionRepository(BaseRepository):
-    def get_all(self):
-        sql = """
+    def get_all(
+        self, filters: DepartmentRepartitionFilter
+    ) -> tuple[list[DepartmentRepartitionDetails], int]:
+
+        where_list = []
+        if filters.group_ids:
+            where_list.append("main.group_id IN :group_ids")
+        if filters.department_ids:
+            where_list.append("main.department_id IN :department_ids")
+        where = f"WHERE {' AND '.join(where_list)}" if where_list else ""
+
+        sql_all = f"""
             select 
                 main.id,
                 main.department_id,
                 department_name = d.name,
                 main.group_id,
                 main.valid_from,
-                main.valid_to
+                main.valid_to,
+                main.group_id,
+                is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
+            {where}
+            ORDER BY main.id
+            OFFSET :offset ROWS
+            FETCH NEXT :limit ROWS ONLY
         """
-        rows = self._fetch_all(sql)
-        return [DepartmentRepartition.model_validate(row) for row in rows]
+        rows = self._fetch_all(sql_all, filters.model_dump())
 
-    def count(self) -> int:
-        sql = """
+        sql_count = f"""
             select
-                count(*) 
-            from finance.factDepartmentsRepartition
+                count(*)
+            from finance.factDepartmentsRepartition AS main
+            {where}
         """
-        return self._scalar(sql)
+        total: int = self._scalar(sql_count, filters.model_dump())
+        return [DepartmentRepartitionDetails.model_validate(row) for row in rows], total
 
-    def get_by_id(self, id: int) -> DepartmentRepartition:
+    def get_by_id(self, id: int) -> DepartmentRepartitionDetails:
         sql = """
             select 
                 main.id,
@@ -37,15 +55,17 @@ class DepartmentRepartitionRepository(BaseRepository):
                 department_name = d.name,
                 main.group_id,
                 main.valid_from,
-                main.valid_to
+                main.valid_to,
+                main.group_id,
+                is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
             where main.id = :id
         """
         row = self._fetch_one(sql, {"id": id})
-        return DepartmentRepartition.model_validate(row)
+        return DepartmentRepartitionDetails.model_validate(row)
 
-    def get_by_group_id(self, group_id: int) -> list[DepartmentRepartition]:
+    def get_by_group_id(self, group_id: int) -> list[DepartmentRepartitionDetails]:
         sql = """
             declare @date date = GETDATE()
             select 
@@ -67,7 +87,7 @@ class DepartmentRepartitionRepository(BaseRepository):
                 main.valid_to ASC
         """
         rows = self._fetch_all(sql, {"group_id": group_id})
-        return [DepartmentRepartition.model_validate(row) for row in rows]
+        return [DepartmentRepartitionDetails.model_validate(row) for row in rows]
 
     def create(
         self,
