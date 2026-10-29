@@ -1,10 +1,11 @@
 from pydantic import BaseModel
 
 
-class PaginatedResponse[T](BaseModel):
-    data: list[T]
+class Page[T](BaseModel):
+    items: list[T]
     total: int
-    success: bool = True
+    page: int
+    limit: int
 
 
 class IdResponse(BaseModel):

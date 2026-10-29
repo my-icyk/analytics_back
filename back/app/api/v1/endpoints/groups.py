@@ -7,7 +7,7 @@ from app.api.deps import (
     get_finance_rule_service,
     require_permission,
 )
-from app.api.v1.schemas.common import PaginatedResponse
+from app.api.v1.schemas.common import Page
 from app.api.v1.schemas.finance import (
     DepartmentRead,
     DepartmentRepartitionCreate,
@@ -63,18 +63,20 @@ def lookup_groups(
     return service.lookup_groups(search)
 
 
-@router.get("", response_model=PaginatedResponse[GroupRead])
+@router.get("", response_model=Page[GroupRead])
 def get_groups(
-    filters: Annotated[GroupFilter, Query()],
+    params: Annotated[GroupFilter, Query()],
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
 
-    rows = service.get_groups_page(filters)
+    rows = service.get_groups_page(params)
 
-    return PaginatedResponse(
-        data=rows.items,
+    return Page(
+        items=rows.items,
         total=rows.total,
+        page=params.page,
+        limit=params.limit,
     )
 
 
