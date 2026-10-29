@@ -140,3 +140,7 @@ class DepartmentRead(Base):
     code: str
     name: str
     brand: str
+
+
+class CopyTargetsIn(Base):
+    source_rule_id: int

@@ -5,6 +5,7 @@ from app.api.deps import (
     require_permission,
 )
 from app.api.v1.schemas.finance import (
+    CopyTargetsIn,
     RuleCreate,
     RuleRead,
     RuleUpdate,
@@ -124,3 +125,13 @@ def remove_target(
     _=Depends(require_permission(PermissionEnum.FINANCE_RULE_TARGET_DELETE)),
 ):
     service.remove_target(rule_id, target_id)
+
+
+@router.post("/{rule_id}/targets/copy-from", status_code=status.HTTP_204_NO_CONTENT)
+def replace_targets_from_rule(
+    rule_id: int,
+    payload: CopyTargetsIn,
+    service: FinanceRuleService = Depends(get_finance_rule_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_RULE_TARGET_UPDATE)),
+):
+    service.replace_targets_from_rule(rule_id, payload.source_rule_id)

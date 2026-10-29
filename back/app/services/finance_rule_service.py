@@ -2,6 +2,7 @@ from datetime import date
 
 from app.domains.finance import GroupRule, GroupRuleTarget
 from app.exceptions.exceptions import (
+    BadRequestError,
     NotFoundError,
     OverlappingPeriodError,
 )
@@ -113,6 +114,20 @@ class FinanceRuleService:
         self.get_rule(rule_id)
         self.group_rule_target_repository.delete_by_rule_id(rule_id)
         self.group_rule_repository.delete(group_id, rule_id)
+
+    def replace_targets_from_rule(self, rule_id: int, source_rule_id: int) -> None:
+        if rule_id == source_rule_id:
+            raise BadRequestError("Cannot replace targets from the same rule.")
+
+        # validate that both rules exist before creating targets from the source rule
+        self.get_rule(rule_id)
+        self.get_rule(source_rule_id)
+
+        # delete other targets associated with the rule before creating new ones
+        self.group_rule_target_repository.delete_by_rule_id(rule_id)
+
+        # create new targets for the rule from the source rule
+        self.group_rule_target_repository.create_from_rule(rule_id, source_rule_id)
 
     def get_target(self, id: int) -> GroupRuleTarget:
         target = self.group_rule_target_repository.get_by_id(id)

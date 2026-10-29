@@ -98,3 +98,19 @@ class GroupRuleTargetRepository(BaseRepository):
             where rule_id = :rule_id
         """
         self._execute(sql, {"rule_id": rule_id})
+
+    def create_from_rule(self, rule_id: int, source_rule_id: int) -> None:
+
+        sql = """
+            insert into finance.factGroupRulesTargets (rule_id, group_id, allocation_type, percent_value)
+
+            select
+                :rule_id,
+                group_id,
+                allocation_type,
+                percent_value
+            from finance.factGroupRulesTargets
+            where
+                rule_id = :source_rule_id
+        """
+        self._execute(sql, {"rule_id": rule_id, "source_rule_id": source_rule_id})
