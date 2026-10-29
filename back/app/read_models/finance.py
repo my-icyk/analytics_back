@@ -11,3 +11,4 @@ class DepartmentRepartitionDetails(BaseModel):
     valid_to: date | None
     is_active: bool
     group_id: int
+    group_name: str

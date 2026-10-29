@@ -24,12 +24,13 @@ class DepartmentRepartitionRepository(BaseRepository):
                 main.department_id,
                 department_name = d.name,
                 main.group_id,
+                group_name = g.name,
                 main.valid_from,
                 main.valid_to,
-                main.group_id,
                 is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
+            JOIN finance.dimGroups g ON g.id = main.group_id
             {where}
             ORDER BY main.id
             OFFSET :offset ROWS
@@ -54,12 +55,14 @@ class DepartmentRepartitionRepository(BaseRepository):
                 department_code = d.code,
                 department_name = d.name,
                 main.group_id,
+                group_name = g.name,
                 main.valid_from,
                 main.valid_to,
                 main.group_id,
                 is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
+            JOIN finance.dimGroups g ON g.id = main.group_id
             where main.id = :id
         """
         row = self._fetch_one(sql, {"id": id})
@@ -75,9 +78,11 @@ class DepartmentRepartitionRepository(BaseRepository):
                 is_active = op.is_active,
                 main.valid_from,
                 main.valid_to,
-                main.group_id
+                main.group_id,
+                group_name = g.name
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
+            JOIN finance.dimGroups g ON g.id = main.group_id
             outer apply (
                 SELECT
                 is_active = IIF(@date BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
