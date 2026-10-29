@@ -12,3 +12,4 @@ class User(DomainModel):
     is_admin: bool
     hashed_password: str
     created_at: datetime
+    employee_ref: str | None = None

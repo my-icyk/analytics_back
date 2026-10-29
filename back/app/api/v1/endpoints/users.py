@@ -27,6 +27,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/me", response_model=MyUser)
 def get_me(
+    user_service: UserService = Depends(get_user_service),
     role_permission_service: RolePermissionService = Depends(
         get_role_permission_service
     ),
@@ -35,6 +36,7 @@ def get_me(
     # TODO: NU ESTE CORECT DE STARNS AICI, PROBABIL SERVICE TREBUIE SA FACA ASTA
     roles = role_permission_service.get_roles_by_user_id(current_user.id)
     permissions = role_permission_service.get_permissions_by_user_id(current_user.id)
+    employee_details = user_service.get_employee_details(current_user)
     return MyUser(
         id=current_user.id,
         username=current_user.username,
@@ -44,6 +46,7 @@ def get_me(
         name=current_user.name,
         roles=[role.name for role in roles],
         permissions=[permission.name for permission in permissions],
+        employee_details=employee_details,
     )
 
 

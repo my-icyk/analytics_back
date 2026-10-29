@@ -1,3 +1,4 @@
+from app.api.v1.schemas.user import EmployeeDetails
 from app.core.security import (
     get_password_hash,
     validate_password_strength,
@@ -27,6 +28,11 @@ class UserService:
             raise UserNotFoundError(user_id)
 
         return user
+
+    def get_employee_details(self, caller: User) -> EmployeeDetails | None:
+        if caller.employee_ref is None:
+            return None
+        return self.user_repository.get_employee_details(caller.employee_ref)
 
     def create_user(
         self, username: str, password: str, name: str, email: str | None = None

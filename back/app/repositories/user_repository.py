@@ -5,6 +5,7 @@ full row (including DB-generated id, created_at, updated_at) back in one
 round trip instead of a separate SELECT.
 """
 
+from app.api.v1.schemas.user import EmployeeDetails
 from app.domains.user import User
 from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
@@ -149,3 +150,19 @@ class UserRepository(BaseRepository):
             add_sql,
             {"user_id": user_id, "roles_ids": roles_ids},
         )
+
+    def get_employee_details(self, employee_ref: str) -> EmployeeDetails | None:
+        sql = """
+            select top 1
+                departament_name,
+                hire_date,
+                work,
+                birth_date,
+                top_departament_name
+            from Adaugari.dbo.DirectoryEmployees
+            WHERE ref = :employee_ref
+        """
+        row = self._fetch_one_or_none(sql, {"employee_ref": employee_ref})
+        if row is None:
+            return None
+        return EmployeeDetails.model_validate(row)

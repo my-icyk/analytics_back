@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import Field
 
@@ -21,6 +21,14 @@ class UserUpdate(Base):
     name: str
 
 
+class EmployeeDetails(Base):
+    departament_name: str | None = None
+    hire_date: date | None = None
+    work: str | None = None
+    birth_date: date | None = None
+    top_departament_name: str | None = None
+
+
 class MyUser(Base):
     id: int
     username: str
@@ -30,6 +38,7 @@ class MyUser(Base):
     name: str
     roles: list[str]
     permissions: list[str]
+    employee_details: EmployeeDetails | None = None
 
 
 class UserCreate(Base):
