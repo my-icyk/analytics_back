@@ -12,9 +12,9 @@ class InvalidTokenError(Exception):
 
 
 class InactiveUserError(Exception):
-    def __init__(self, user_id: int):
-        self.user_id = user_id
-        super().__init__(f"User {user_id} is inactive")
+    def __init__(self, username: str):
+        self.username = username
+        super().__init__(f"User {username} is inactive")
 
 
 class UserNotFoundError(Exception):

@@ -37,7 +37,7 @@ class AuthenticationService:
             raise InvalidCredentialsError()
 
         if not user.is_active:
-            raise InactiveUserError(user.id)
+            raise InactiveUserError(user.username)
 
         access_token = create_access_token({"sub": str(user.id)})
         raw_refresh, refresh_hash, expires_at = create_refresh_token(
@@ -107,6 +107,6 @@ class AuthenticationService:
         if user is None:
             raise InvalidTokenError()
         if not user.is_active:
-            raise InactiveUserError(user_id)
+            raise InactiveUserError(user.username)
 
         return user
