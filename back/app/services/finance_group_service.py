@@ -43,8 +43,7 @@ class FinanceGroupService:
         self.department_repartition_repository = department_repartition_repository
 
     def get_groups_page(self, filters: GroupFilter) -> GroupPage:
-        items = self.group_repository.get_all(filters)
-        total = self.group_repository.count(filters)
+        items, total = self.group_repository.get_all(filters)
         return GroupPage(items=items, total=total)
 
     def _validate_group_name(self, name: str):
@@ -94,18 +93,6 @@ class FinanceGroupService:
         if not group:
             raise NotFoundError("Group", "id", str(id))
         return group
-
-    def get_groups(
-        self,
-        filters: GroupFilter,
-    ) -> list[GroupOverview]:
-        return self.group_repository.get_all(filters)
-
-    def count_groups(
-        self,
-        filters: GroupFilter,
-    ) -> int:
-        return self.group_repository.count(filters)
 
     def create_group(self, name: str, group_type_id: int, division_id: int) -> int:
         self._validate_group_name(name)

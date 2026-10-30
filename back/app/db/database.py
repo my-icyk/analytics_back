@@ -11,7 +11,7 @@ settings = get_settings()
 engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,
-    echo=False,  # Set to False in production
+    echo=True,  # Set to False in production
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

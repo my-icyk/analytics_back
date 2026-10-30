@@ -99,12 +99,17 @@ class GroupRepository(BaseRepository):
 
         return Group.model_validate(row) if row else None
 
-    def get_all(self, filters: GroupFilter) -> list[GroupOverview]:
-        conditions, params, expanding = self._build_conditions(filters)
+    def get_all(self, filters: GroupFilter) -> tuple[list[GroupOverview], int]:
+        conditions = []
+
+        if filters.division_ids:
+            conditions.append("g.division_id IN :division_ids")
+
+        if filters.group_type_ids:
+            conditions.append("g.group_type_id IN :group_type_ids")
 
         if filters.search:
-            conditions.append("g.name LIKE :search")
-            params["search"] = f"%{filters.search}%"
+            conditions.append("g.name LIKE :search_pattern")
 
         sql = """
         select
@@ -130,17 +135,15 @@ class GroupRepository(BaseRepository):
             OFFSET :offset ROWS
             FETCH NEXT :limit ROWS ONLY
         """
-        params["offset"] = filters.offset
-        params["limit"] = filters.limit
-        rows = self._fetch_some(sql, filters.model_dump(), expanding=expanding)
-        return [GroupOverview.model_validate(row) for row in rows]
 
-    def count(self, filters: GroupFilter) -> int:
-        conditions, params, expanding = self._build_conditions(filters)
-        sql = "SELECT COUNT(*) FROM finance.dimGroups g"
+        rows = self._fetch_all(sql, filters.model_dump())
+
+        sql_total = "SELECT COUNT(*) FROM finance.dimGroups g"
         if conditions:
-            sql += " WHERE " + " AND ".join(conditions)
-        return self._scalar(sql, filters.model_dump())
+            sql_total += " WHERE " + " AND ".join(conditions)
+
+        total = self._scalar(sql_total, filters.model_dump())
+        return [GroupOverview.model_validate(row) for row in rows], total
 
     def create(self, name: str, group_type_id: int, division_id: int) -> int:
         params = {
