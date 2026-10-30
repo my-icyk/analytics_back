@@ -18,20 +18,6 @@ class GroupRepository(BaseRepository):
         LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
     """
 
-    def _build_conditions(
-        self, filters: GroupFilter
-    ) -> tuple[list[str], dict, list[str]]:
-        conditions, params, expanding = [], {}, []
-        if filters.division_ids:
-            conditions.append("g.division_id IN :division_ids")
-            params["division_ids"] = filters.division_ids
-            expanding.append("division_ids")
-        if filters.group_type_ids:
-            conditions.append("g.group_type_id IN :group_type_ids")
-            params["group_type_ids"] = filters.group_type_ids
-            expanding.append("group_type_ids")
-        return conditions, params, expanding
-
     def _map_group_detail(self, row) -> GroupDetail:
         division = {
             "id": row["division_id"],
