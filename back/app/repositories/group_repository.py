@@ -1,6 +1,5 @@
 from app.domains.finance import (
     Group,
-    GroupDetail,
     GroupOverview,
 )
 from app.filters.finance import GroupFilter
@@ -17,25 +16,6 @@ class GroupRepository(BaseRepository):
         LEFT JOIN finance.dimDivision AS d ON d.id = g.division_id
         LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
     """
-
-    def _map_group_detail(self, row) -> GroupDetail:
-        division = {
-            "id": row["division_id"],
-            "name": row["division_name"],
-        }
-        group_type = {
-            "id": row["group_type_id"],
-            "name": row["group_type_name"],
-        }
-
-        return GroupDetail.model_validate(
-            {
-                "id": row["group_id"],
-                "name": row["group_name"],
-                "division": division,
-                "group_type": group_type,
-            }
-        )
 
     def lookup(self, search: str) -> list[LookupResponse]:
         return self._lookup(LookupObjects.GROUPS, search)
@@ -169,23 +149,6 @@ class GroupRepository(BaseRepository):
             where id = :id
         """
         self._execute(sql, {"id": id})
-
-    def get_by_division_id(self, division_id: int) -> list[GroupDetail]:
-        sql = """
-            select
-                group_id = g.id,
-                group_name = g.name,
-                division_id = d.id,
-                division_name = d.name,
-                group_type_id = gt.id,
-                group_type_name = gt.name
-            from finance.dimGroups AS g
-            LEFT JOIN finance.dimDivision AS d ON d.id = g.division_id
-            LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
-            where g.division_id = :division_id
-        """
-        rows = self._fetch_all(sql, {"division_id": division_id})
-        return [self._map_group_detail(row) for row in rows]
 
     def get_by_division_id_light(self, id: int) -> list[Group]:
         sql = """
