@@ -7,6 +7,7 @@ class DepartmentRepartitionDetails(BaseModel):
     id: int
     department_id: int
     department_name: str
+    department_code: str
     valid_from: date
     valid_to: date | None
     is_active: bool
