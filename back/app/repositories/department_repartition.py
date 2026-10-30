@@ -94,9 +94,8 @@ class DepartmentRepartitionRepository(BaseRepository):
                 is_active = IIF(@date BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
             ) as op
             where main.group_id = :group_id
-            ORDER BY 
-                op.is_active DESC,
-                main.valid_to ASC
+            ORDER BY      
+                main.valid_from DESC
         """
         rows = self._fetch_all(sql, {"group_id": group_id})
         return [DepartmentRepartitionDetails.model_validate(row) for row in rows]
