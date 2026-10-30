@@ -7,16 +7,6 @@ from app.repositories.base import BaseRepository, LookupObjects, LookupResponse
 
 
 class GroupRepository(BaseRepository):
-    _DETAIL_SQL = """
-        select
-            g.id as group_id, g.name as group_name,
-            d.id as division_id, d.name as division_name,
-            gt.id as group_type_id, gt.name as group_type_name
-        from finance.dimGroups AS g
-        LEFT JOIN finance.dimDivision AS d ON d.id = g.division_id
-        LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
-    """
-
     def lookup(self, search: str) -> list[LookupResponse]:
         return self._lookup(LookupObjects.GROUPS, search)
 
