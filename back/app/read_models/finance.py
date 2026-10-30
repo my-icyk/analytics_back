@@ -12,3 +12,4 @@ class DepartmentRepartitionDetails(BaseModel):
     is_active: bool
     group_id: int
     group_name: str
+    brand_name: str

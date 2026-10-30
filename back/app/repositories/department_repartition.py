@@ -27,7 +27,8 @@ class DepartmentRepartitionRepository(BaseRepository):
                 group_name = g.name,
                 main.valid_from,
                 main.valid_to,
-                is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
+                is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0),
+                brand_name = d.brand
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
             JOIN finance.dimGroups g ON g.id = main.group_id
@@ -59,7 +60,8 @@ class DepartmentRepartitionRepository(BaseRepository):
                 main.valid_from,
                 main.valid_to,
                 main.group_id,
-                is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0)
+                is_active = IIF(GETDATE() BETWEEN main.valid_from AND ISNULL(main.valid_to, '9999-12-31'), 1, 0),
+                brand_name = d.brand
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
             JOIN finance.dimGroups g ON g.id = main.group_id
@@ -79,7 +81,8 @@ class DepartmentRepartitionRepository(BaseRepository):
                 main.valid_from,
                 main.valid_to,
                 main.group_id,
-                group_name = g.name
+                group_name = g.name,
+                brand_name = d.brand
             from finance.factDepartmentsRepartition AS main
             JOIN finance.dimDepartments d ON d.id = main.department_id
             JOIN finance.dimGroups g ON g.id = main.group_id
