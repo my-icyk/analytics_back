@@ -37,6 +37,13 @@ class Group(DomainModel):
     name: str
     division_id: int
     group_type_id: int
+    parent_id: int | None = None
+    parent_type_id: int | None = None
+
+
+class GroupFolder(DomainModel):
+    id: int
+    name: str
 
 
 class GroupDetail(DomainModel):
@@ -55,6 +62,8 @@ class GroupOverview(DomainModel):
     group_type_name: str
     rules_count: int
     repartitions_count: int
+    parent_id: int | None = None
+    parent_name: str | None = None
 
 
 class GroupLookup(DomainModel):

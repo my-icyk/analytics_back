@@ -5,6 +5,7 @@ from app.domains.finance import (
     Deparment,
     DivisionDetail,
     Group,
+    GroupFolder,
     GroupOverview,
     GroupPage,
 )
@@ -92,6 +93,9 @@ class FinanceGroupService:
             raise NotFoundError("Division", "id", str(id))
         return division
 
+    def get_folders(self) -> list[GroupFolder]:
+        return self.group_repository.get_folders()
+
     def create_division(
         self, name: str, is_administrative: bool, company_id: int
     ) -> int:
@@ -114,16 +118,27 @@ class FinanceGroupService:
             raise NotFoundError("Group", "id", str(id))
         return group
 
-    def create_group(self, name: str, group_type_id: int, division_id: int) -> int:
+    def create_group(
+        self,
+        name: str,
+        group_type_id: int,
+        division_id: int,
+        parent_id: int | None = None,
+    ) -> int:
         self._validate_group_name(name)
 
         self._validate_group_type(group_type_id)
 
         self._validate_division(division_id)
-        return self.group_repository.create(name, group_type_id, division_id)
+        return self.group_repository.create(name, group_type_id, division_id, parent_id)
 
     def update_group(
-        self, id: int, name: str, group_type_id: int, division_id: int
+        self,
+        id: int,
+        name: str,
+        group_type_id: int,
+        division_id: int,
+        parent_id: int | None = None,
     ) -> None:
         self.get_group(id)
         existing_group: Group | None = self.group_repository.get_by_name(name)
@@ -135,7 +150,7 @@ class FinanceGroupService:
 
         self._validate_division(division_id)
 
-        self.group_repository.update(id, name, division_id, group_type_id)
+        self.group_repository.update(id, name, division_id, group_type_id, parent_id)
 
     def delete_group(self, id: int) -> None:
         group = self.group_repository.get_by_id_light(id)

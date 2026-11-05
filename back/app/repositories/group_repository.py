@@ -1,5 +1,6 @@
 from app.domains.finance import (
     Group,
+    GroupFolder,
     GroupOverview,
 )
 from app.filters.finance import GroupFilter
@@ -22,11 +23,14 @@ class GroupRepository(BaseRepository):
                 rules_count = (SELECT COUNT(*) FROM finance.factGroupRules AS r
                                 WHERE r.group_id = g.id),
                 repartitions_count = (SELECT COUNT(*) FROM finance.factDepartmentsRepartition AS r
-                                    WHERE r.group_id = g.id)
+                                    WHERE r.group_id = g.id),
+                parent_id = parent.id,
+                parent_name = parent.name
 
             FROM finance.dimGroups AS g
             LEFT JOIN finance.dimDivision   AS d  ON d.id  = g.division_id
             LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
+            LEFT JOIN finance.dimGroups AS parent ON parent.id = g.parent_id
             where g.id = :id
         """
         rows = self._fetch_one_or_none(sql, {"id": id})
@@ -78,10 +82,13 @@ class GroupRepository(BaseRepository):
             rules_count = (SELECT COUNT(*) FROM finance.factGroupRules AS r
                             WHERE r.group_id = g.id),
             repartitions_count = (SELECT COUNT(*) FROM finance.factDepartmentsRepartition AS r
-                                WHERE r.group_id = g.id)
+                                WHERE r.group_id = g.id),
+            parent_id = parent.id,
+            parent_name = parent.name
         from finance.dimGroups AS g
         LEFT JOIN finance.dimDivision AS d ON d.id = g.division_id
         LEFT JOIN finance.dimGroupTypes AS gt ON gt.id = g.group_type_id
+        LEFT JOIN finance.dimGroups AS parent ON parent.id = g.parent_id
 """
         if conditions:
             sql += " WHERE " + " AND ".join(conditions)
@@ -101,26 +108,41 @@ class GroupRepository(BaseRepository):
         total = self._scalar(sql_total, filters.model_dump())
         return [GroupOverview.model_validate(row) for row in rows], total
 
-    def create(self, name: str, group_type_id: int, division_id: int) -> int:
+    def create(
+        self,
+        name: str,
+        group_type_id: int,
+        division_id: int,
+        parent_id: int | None = None,
+    ) -> int:
         params = {
             "name": name,
             "group_type_id": group_type_id,
             "division_id": division_id,
+            "parent_id": parent_id,
         }
         sql = """
-            insert into finance.dimGroups (name, division_id, group_type_id)
+            insert into finance.dimGroups (name, division_id, group_type_id, parent_id)
             OUTPUT inserted.id
-            values (:name, :division_id, :group_type_id)
+            values (:name, :division_id, :group_type_id, :parent_id)
         """
 
         return self._scalar(sql, params)
 
-    def update(self, id: int, name: str, division_id: int, group_type_id: int):
+    def update(
+        self,
+        id: int,
+        name: str,
+        division_id: int,
+        group_type_id: int,
+        parent_id: int | None = None,
+    ):
         sql = """
             update finance.dimGroups
             set name = :name,
                 division_id = :division_id,
-                group_type_id = :group_type_id
+                group_type_id = :group_type_id,
+                parent_id = :parent_id
             where id = :id
         """
         self._execute(
@@ -130,6 +152,7 @@ class GroupRepository(BaseRepository):
                 "name": name,
                 "division_id": division_id,
                 "group_type_id": group_type_id,
+                "parent_id": parent_id,
             },
         )
 
@@ -149,3 +172,11 @@ class GroupRepository(BaseRepository):
         """
         rows = self._fetch_all(sql, {"id": id})
         return [Group.model_validate(row) for row in rows]
+
+    def get_folders(self) -> list[GroupFolder]:
+        sql = """
+            select * from finance.dimGroups
+            where group_type_id = 4
+        """
+        rows = self._fetch_all(sql, {})
+        return [GroupFolder.model_validate(row) for row in rows]

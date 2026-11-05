@@ -21,6 +21,7 @@ from app.api.v1.schemas.finance import (
     RuleRead,
 )
 from app.core.permisions import PermissionEnum
+from app.domains.finance import GroupFolder
 from app.filters.finance import GroupFilter
 from app.repositories.base import LookupResponse
 from app.services.finance_group_service import FinanceGroupService
@@ -52,6 +53,14 @@ def get_group_types(
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
     return service.get_group_types()
+
+
+@router.get("/folders", response_model=list[GroupFolder])
+def get_folders(
+    service: FinanceGroupService = Depends(get_finance_group_service),
+    _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
+):
+    return service.get_folders()
 
 
 @router.get("/lookup", response_model=list[LookupResponse])
@@ -98,7 +107,9 @@ def create_group(
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_CREATE)),
 ):
-    id = service.create_group(payload.name, payload.group_type_id, payload.division_id)
+    id = service.create_group(
+        payload.name, payload.group_type_id, payload.division_id, payload.parent_id
+    )
     return {"id": id}
 
 
@@ -109,7 +120,9 @@ def update_group(
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_UPDATE)),
 ):
-    service.update_group(id, payload.name, payload.group_type_id, payload.division_id)
+    service.update_group(
+        id, payload.name, payload.group_type_id, payload.division_id, payload.parent_id
+    )
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -46,6 +46,8 @@ class GroupRead(Base):
     group_type_name: str
     rules_count: int
     repartitions_count: int
+    parent_id: int | None
+    parent_name: str | None
 
 
 class GroupOverview(Base):
@@ -63,12 +65,14 @@ class GroupCreate(Base):
     name: str
     division_id: int
     group_type_id: int
+    parent_id: int | None = None
 
 
 class GroupUpdate(Base):
     name: str
     division_id: int
     group_type_id: int
+    parent_id: int | None = None
 
 
 class GroupLookup(Base):
