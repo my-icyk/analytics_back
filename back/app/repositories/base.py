@@ -44,7 +44,7 @@ class BaseRepository:
         return self.db.execute(self._build_stmt(sql, params), params)
 
     def _fetch_one_or_none(self, sql: str, params: dict[str, Any]) -> dict | None:
-        row = self.db.execute(text(sql), params).mappings().first()
+        row = self._run(sql, params).mappings().first()
         return dict(row) if row is not None else None
 
     def _fetch_one(self, sql: str, params: dict[str, Any]) -> dict:

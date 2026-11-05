@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.permisions import PermissionEnum
 from app.db.database import get_db
 from app.domains.user import User
+from app.repositories.analytics.procedure_repository import ProcedureRepository
 from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.authorization_repository import AuthorizationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
@@ -21,6 +22,7 @@ from app.repositories.snapshot_repository import SnapshotRepository
 from app.repositories.specific_repository import SpecificRepository
 from app.repositories.user_repository import UserRepository
 from app.repositories.user_role_repository import UserRoleRepository
+from app.services.analytics.procedure_service import ProcedureService
 from app.services.authentication_service import AuthenticationService
 from app.services.authorization_service import AuthorizationService
 from app.services.counter_update_service import CounterUpdateService
@@ -232,4 +234,16 @@ def get_snapshot_service(
 ) -> SnapshotService:
     return SnapshotService(
         snapshot_repository=snapshot_repository,
+    )
+
+
+def get_procedure_repository(db: Session = Depends(get_db)) -> ProcedureRepository:
+    return ProcedureRepository(db)
+
+
+def get_procedure_service(
+    procedure_repository: ProcedureRepository = Depends(get_procedure_repository),
+) -> ProcedureService:
+    return ProcedureService(
+        procedure_repository=procedure_repository,
     )

@@ -19,6 +19,12 @@ class PermissionEnum(StrEnum):
     USER_UPDATE = "user:update"
     USER_DELETE = "user:delete"
     AUTH_USER_CHANGE_PASSWORD = "auth:user:change_password"
+    # analytics
+    ANALYTICS_PROCEDURE_CREATE = "analytics:procedure:create"
+    ANALYTICS_PROCEDURE_READ = "analytics:procedure:read"
+    ANALYTICS_PROCEDURE_UPDATE = "analytics:procedure:update"
+    ANALYTICS_PROCEDURE_DELETE = "analytics:procedure:delete"
+    ANALYTICS_PROCEDURE_RUN = "analytics:procedure:run"
     # roles
     ROLE_CREATE = "role:create"
     ROLE_READ = "role:read"
