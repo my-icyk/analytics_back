@@ -10,6 +10,9 @@ class Base(BaseModel):
 class DivisionRead(Base):
     id: int
     name: str
+    is_administrative: bool
+    company_id: int
+    company_name: str
 
 
 class DivisionDetails(DivisionRead):
@@ -18,10 +21,11 @@ class DivisionDetails(DivisionRead):
 
 class DivisionCreate(Base):
     name: str
+    is_administrative: bool
+    company_id: int
 
 
-class DivisionUpdate(Base):
-    name: str
+class DivisionUpdate(DivisionCreate): ...
 
 
 class GroupTypeRead(Base):
@@ -144,3 +148,8 @@ class DepartmentRead(Base):
 
 class CopyTargetsIn(Base):
     source_rule_id: int
+
+
+class CompanyRead(Base):
+    id: int
+    name: str

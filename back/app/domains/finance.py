@@ -6,11 +6,16 @@ from app.domains.domain_model import DomainModel
 class Division(DomainModel):
     id: int
     name: str
+    is_administrative: bool
+    company_id: int
 
 
 class DivisionDetail(DomainModel):
     id: int
     name: str
+    is_administrative: bool
+    company_id: int
+    company_name: str
     group_count: int
 
 

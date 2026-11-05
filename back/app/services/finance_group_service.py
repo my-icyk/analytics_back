@@ -3,7 +3,6 @@ from datetime import date
 from app.api.v1.schemas.finance import GroupTypeDetails
 from app.domains.finance import (
     Deparment,
-    Division,
     DivisionDetail,
     Group,
     GroupOverview,
@@ -16,10 +15,12 @@ from app.exceptions.exceptions import (
     NotFoundError,
 )
 from app.filters.finance import DepartmentRepartitionFilter, GroupFilter
+from app.models.finance.company import Company
 from app.read_models.finance import DepartmentRepartitionDetails
 from app.repositories.base import LookupResponse
 from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
+from app.repositories.finance.company_repo import CompanyRepo
 from app.repositories.group_repository import GroupRepository
 from app.repositories.group_rule_repository import GroupRuleRepository
 from app.repositories.group_type_repository import GroupTypeRepository
@@ -35,12 +36,25 @@ class FinanceGroupService:
         group_repository: GroupRepository,
         group_rule_repository: GroupRuleRepository,
         department_repartition_repository: DepartmentRepartitionRepository,
+        # TODO: Need to implemet sql orm logic for evry service
+        company_repo: CompanyRepo,
     ):
         self.group_type_repository = group_type_repository
         self.division_repository = division_repository
         self.group_repository = group_repository
         self.group_rule_repository = group_rule_repository
         self.department_repartition_repository = department_repartition_repository
+
+        self._companies = company_repo
+
+    def get_company(self, company_id: int) -> Company:
+        company = self._companies.get_company(company_id)
+        if company is None:
+            raise NotFoundError("Company", "id", str(company_id))
+        return company
+
+    def get_companies(self, only_active: bool = True) -> list[Company]:
+        return self._companies.get_companies(only_active)
 
     def get_groups_page(self, filters: GroupFilter) -> GroupPage:
         items, total = self.group_repository.get_all(filters)
@@ -78,15 +92,21 @@ class FinanceGroupService:
             raise NotFoundError("Division", "id", str(id))
         return division
 
-    def create_division(self, name: str) -> Division:
-        self._validate_division_name(name)
-        return self.division_repository.create(name)
+    def create_division(
+        self, name: str, is_administrative: bool, company_id: int
+    ) -> int:
+        # need refactor of validation by name
+        # self._validate_division_name(name)
+        return self.division_repository.create(name, is_administrative, company_id)
 
-    def update_division(self, id: int, name: str) -> Division:
+    def update_division(
+        self, id: int, name: str, is_administrative: bool, company_id: int
+    ) -> None:
         self.get_division(id)
-        self._validate_division_name(name)
+        # need refactor of validation by name
+        # self._validate_division_name(name)
 
-        return self.division_repository.update(id, name)
+        self.division_repository.update(id, name, is_administrative, company_id)
 
     def get_group(self, id: int) -> GroupOverview:
         group = self.group_repository.get_by_id(id)

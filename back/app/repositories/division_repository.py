@@ -1,4 +1,4 @@
-from app.domains.finance import Division, DivisionDetail
+from app.domains.finance import DivisionDetail
 from app.repositories.base import BaseRepository
 
 
@@ -9,14 +9,21 @@ class DivisionRepository(BaseRepository):
             SELECT
                 d.id,
                 d.name,
+                d.is_administrative,
+                d.company_id,
+                c.name AS company_name,
                 group_count = count(g.id)
             FROM finance.dimDivision AS d
             LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
+            LEFT JOIN finance.dimCompanies AS c ON c.id = d.company_id
             WHERE
                 d.id = :division_id
             GROUP BY
                 d.id,
-                d.name
+                d.name,
+                d.is_administrative,
+                d.company_id,
+                c.name
             ORDER BY
                 d.name,
                 d.id
@@ -30,14 +37,21 @@ class DivisionRepository(BaseRepository):
             SELECT
                 d.id,
                 d.name,
+                d.is_administrative,
+                d.company_id,
+                c.name AS company_name,
                 group_count = count(g.id)
             FROM finance.dimDivision AS d
             LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
+            LEFT JOIN finance.dimCompanies AS c ON c.id = d.company_id
             WHERE
                 d.name = :name
             GROUP BY
                 d.id,
-                d.name
+                d.name,
+                d.is_administrative,
+                d.company_id,
+                c.name
             ORDER BY
                 d.name,
                 d.id
@@ -51,12 +65,19 @@ class DivisionRepository(BaseRepository):
             SELECT
                 d.id,
                 d.name,
+                d.is_administrative,
+                d.company_id,
+                c.name AS company_name,
                 group_count = count(g.id)
             FROM finance.dimDivision AS d
             LEFT JOIN finance.dimGroups AS g ON g.division_id = d.id
+            LEFT JOIN finance.dimCompanies AS c ON c.id = d.company_id
             GROUP BY
                 d.id,
-                d.name
+                d.name,
+                d.is_administrative,
+                d.company_id,
+                c.name
             ORDER BY
                 d.name,
                 d.id
@@ -64,27 +85,44 @@ class DivisionRepository(BaseRepository):
         results = self._fetch_all(sql)
         return [DivisionDetail.model_validate(result) for result in results]
 
-    def create(self, name: str) -> Division:
+    def create(self, name: str, is_administrative: bool, company_id: int) -> int:
 
         sql = """
-            INSERT INTO finance.dimDivision (name)
-            OUTPUT INSERTED.*
-            VALUES (:name)
+            INSERT INTO finance.dimDivision (name, is_administrative, company_id)
+            OUTPUT INSERTED.id
+            VALUES (:name, :is_administrative, :company_id)
         """
-        result = self._fetch_one(sql, {"name": name})
-        return Division.model_validate(result)
+        id = self._scalar(
+            sql,
+            {
+                "name": name,
+                "is_administrative": is_administrative,
+                "company_id": company_id,
+            },
+        )
+        return id
 
-    def update(self, id, name) -> Division:
+    def update(
+        self, id: int, name: str, is_administrative: bool, company_id: int
+    ) -> None:
         sql = """
             UPDATE finance.dimDivision
-            SET name = :name
-            OUTPUT INSERTED.*
-            WHERE id = :id
+            SET name = :name,
+                is_administrative = :is_administrative,
+                company_id = :company_id
+              WHERE id = :id
         """
-        result = self._fetch_one(sql, {"id": id, "name": name})
-        return Division.model_validate(result)
+        self._execute(
+            sql,
+            {
+                "id": id,
+                "name": name,
+                "is_administrative": is_administrative,
+                "company_id": company_id,
+            },
+        )
 
-    def delete(self, id) -> None:
+    def delete(self, id: int) -> None:
 
         sql = """
             DELETE FROM finance.dimDivision

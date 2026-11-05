@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, status
 
 from app.api.deps import get_finance_group_service, require_permission
+from app.api.v1.schemas.common import IdResponse
 from app.api.v1.schemas.finance import (
     DivisionCreate,
     DivisionDetails,
-    DivisionRead,
     DivisionUpdate,
 )
 from app.core.permisions import PermissionEnum
@@ -21,24 +21,29 @@ def get_divisions(
     return service.get_divisions()
 
 
-@router.post("", response_model=DivisionRead)
+@router.post("", response_model=IdResponse)
 def create_division(
     payload: DivisionCreate,
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_DIVISION_CREATE)),
 ):
-    return service.create_division(payload.name)
+
+    id = service.create_division(
+        payload.name, payload.is_administrative, payload.company_id
+    )
+    return IdResponse(id=id)
 
 
-# TODO: Remove response model from update and create
-@router.put("/{division_id}", response_model=DivisionRead)
+@router.put("/{division_id}", status_code=status.HTTP_204_NO_CONTENT)
 def update_division(
     division_id: int,
     payload: DivisionUpdate,
     service: FinanceGroupService = Depends(get_finance_group_service),
     _=Depends(require_permission(PermissionEnum.FINANCE_DIVISION_UPDATE)),
 ):
-    return service.update_division(division_id, payload.name)
+    service.update_division(
+        division_id, payload.name, payload.is_administrative, payload.company_id
+    )
 
 
 @router.delete("/{division_id}", status_code=status.HTTP_204_NO_CONTENT)

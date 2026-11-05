@@ -52,6 +52,8 @@ class PermissionEnum(StrEnum):
     AUTH_ROLE_ASSIGN_PERMISSIONS = "auth:role:assign_permissions"
     AUTH_USER_ASSIGN_ROLES = "auth:user:assign_roles"
 
+    FINANCE_COMPANY_READ = "finance:company:read"
+
     FINANCE_DIVISION_CREATE = "finance:division:create"
     FINANCE_DIVISION_READ = "finance:division:read"
     FINANCE_DIVISION_UPDATE = "finance:division:update"

@@ -11,6 +11,7 @@ from app.repositories.authorization_repository import AuthorizationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
+from app.repositories.finance.company_repo import CompanyRepo
 from app.repositories.group_repository import GroupRepository
 from app.repositories.group_rule_repository import GroupRuleRepository
 from app.repositories.group_rule_target_repository import GroupRuleTargetRepository
@@ -193,21 +194,20 @@ def get_current_user(
     return auth_service.authenticate_user(token)
 
 
+def get_company_repository(db: Session = Depends(get_db)) -> CompanyRepo:
+    return CompanyRepo(db)
+
+
 def get_finance_group_service(
-    group_type_repository: GroupTypeRepository = Depends(get_group_type_repository),
-    division_repository: DivisionRepository = Depends(get_division_repository),
-    group_repository: GroupRepository = Depends(get_group_repository),
-    group_rule_repository: GroupRuleRepository = Depends(get_group_rule_repository),
-    department_repartition_repository: DepartmentRepartitionRepository = Depends(
-        get_department_repartition_repository
-    ),
+    session: Session = Depends(get_db),
 ) -> FinanceGroupService:
     return FinanceGroupService(
-        group_type_repository=group_type_repository,
-        division_repository=division_repository,
-        group_repository=group_repository,
-        group_rule_repository=group_rule_repository,
-        department_repartition_repository=department_repartition_repository,
+        group_type_repository=GroupTypeRepository(session),
+        division_repository=DivisionRepository(session),
+        group_repository=GroupRepository(session),
+        group_rule_repository=GroupRuleRepository(session),
+        department_repartition_repository=DepartmentRepartitionRepository(session),
+        company_repo=CompanyRepo(session),
     )
 
 
