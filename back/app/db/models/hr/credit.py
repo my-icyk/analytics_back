@@ -17,7 +17,7 @@ from sqlalchemy.dialects.mssql import DATETIME2
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.db.models.hr import Employee
+from app.db.models.hr.employee import Employee
 
 
 class CreditStatus(StrEnum):
