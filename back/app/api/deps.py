@@ -8,6 +8,10 @@ from app.db.models.auth import User
 from app.repositories.analytics.procedure_repository import ProcedureRepository
 from app.repositories.auth import UserRepository
 from app.repositories.auth.authorization_repository import AuthorizationRepository
+from app.repositories.auth.permision_repository import PermissionRepository
+from app.repositories.auth.role_permission_repository import RolePermissionRepository
+from app.repositories.auth.role_repository import RoleRepository
+from app.repositories.auth.user_role_repository import UserRoleRepository
 from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.repositories.department_repartition import DepartmentRepartitionRepository
@@ -17,12 +21,8 @@ from app.repositories.group_repository import GroupRepository
 from app.repositories.group_rule_repository import GroupRuleRepository
 from app.repositories.group_rule_target_repository import GroupRuleTargetRepository
 from app.repositories.group_type_repository import GroupTypeRepository
-from app.repositories.permision_repository import PermissionRepository
-from app.repositories.role_permission_repository import RolePermissionRepository
-from app.repositories.role_repository import RoleRepository
 from app.repositories.snapshot_repository import SnapshotRepository
 from app.repositories.specific_repository import SpecificRepository
-from app.repositories.user_role_repository import UserRoleRepository
 from app.services.analytics.procedure_service import ProcedureService
 from app.services.auth.user_service import UserService
 from app.services.authentication_service import AuthenticationService
@@ -126,20 +126,15 @@ def get_user_service(db: Session = Depends(get_db)) -> UserService:
 
 
 def get_role_permission_service(
-    role_repository: RoleRepository = Depends(get_role_repository),
-    permission_repository: PermissionRepository = Depends(get_permission_repository),
-    role_permission_repository: RolePermissionRepository = Depends(
-        get_role_permission_repository
-    ),
-    user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
-    user_repository: UserRepository = Depends(get_user_repository),
+    db: Session = Depends(get_db),
 ) -> RolePermissionService:
     return RolePermissionService(
-        role_repository=role_repository,
-        permission_repository=permission_repository,
-        role_permission_repository=role_permission_repository,
-        user_role_repository=user_role_repository,
-        user_repository=user_repository,
+        session=db,
+        role_repository=RoleRepository(db),
+        permission_repository=PermissionRepository(db),
+        role_permission_repository=RolePermissionRepository(db),
+        user_role_repository=UserRoleRepository(db),
+        user_repository=UserRepository(db),
     )
 
 
