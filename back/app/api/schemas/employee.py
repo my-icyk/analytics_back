@@ -4,7 +4,7 @@ from typing import Annotated, Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.db.models.hr.credit import CreditStatus
+from app.db.models.hr import CreditStatus
 
 Money = Annotated[Decimal, Field(gt=0, max_digits=18, decimal_places=2)]
 NonnegativeMoney = Annotated[Decimal, Field(ge=0, max_digits=18, decimal_places=2)]

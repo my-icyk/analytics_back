@@ -5,7 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.api.schemas.employee import CreditCreate, CreditUpdate
-from app.db.models.hr.credit import CreditStatus, EmployeeCredit
+from app.db.models.hr import CreditStatus, EmployeeCredit
 from app.exceptions.exceptions import NotFoundError
 from app.repositories.employees import CreditRepository, EmployeeRepository
 from app.services.common import Conflict, WriteService

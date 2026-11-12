@@ -11,7 +11,7 @@ from app.api.schemas.employee import (
 )
 from app.core.permisions import PermissionEnum
 from app.db.base import Base
-from app.db.models.auth.user import User
+from app.db.models.auth import User
 from app.services.employees.credit_service import CreditService
 
 router = APIRouter()

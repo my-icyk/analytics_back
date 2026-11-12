@@ -1,7 +1,7 @@
 from datetime import date
 
 from app.api.v1.schemas.finance import GroupTypeDetails
-from app.db.models.finance.company import Company
+from app.db.models.finance import Company
 from app.domains.finance import (
     Deparment,
     DivisionDetail,
