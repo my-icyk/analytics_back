@@ -6,8 +6,9 @@ from app.api.deps import (
     get_user_service,
     require_permission,
 )
-from app.api.v1.schemas.auth import AssignUserRolesRequest
+from app.api.v1.schemas.auth import AssignUserRolesRequest, UserAdminUpdate
 from app.api.v1.schemas.user import (
+    EmployeeDetails,
     MyUser,
     PasswordChange,
     PasswordReset,
@@ -16,8 +17,7 @@ from app.api.v1.schemas.user import (
     UserUpdate,
 )
 from app.core.permisions import PermissionEnum
-from app.domains.user import User
-from app.repositories.base import LookupResponse
+from app.db.models.auth import User
 from app.schemas.role_schema import RoleRead
 from app.services.role_permission_service import RolePermissionService
 from app.services.user_service import UserService
@@ -46,7 +46,7 @@ def get_me(
         name=current_user.name,
         roles=[role.name for role in roles],
         permissions=[permission.name for permission in permissions],
-        employee_details=employee_details,
+        employee_details=EmployeeDetails.model_validate(employee_details),
     )
 
 
@@ -57,16 +57,6 @@ def get_all_users(
 ):
 
     return service.get_all_users()
-
-
-@router.get("/lookup", response_model=list[LookupResponse])
-def lookup_users(
-    search: str,
-    service: UserService = Depends(get_user_service),
-    _: int = Depends(require_permission(PermissionEnum.USER_READ)),
-):
-
-    return service.lookup_users(search=search)
 
 
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
@@ -105,22 +95,14 @@ def update_user(
     )
 
 
-@router.patch("/users/{user_id}/grant-admin", response_model=UserRead)
-def grant_admin(
+@router.patch("/{user_id}/admin", response_model=UserRead)
+def update_admin_status(
     user_id: int,
+    payload: UserAdminUpdate,
     service: UserService = Depends(get_user_service),
-    _: int = Depends(require_permission(PermissionEnum.MANAGE_ADMIN_RIGHTS)),
+    _: User = Depends(require_permission(PermissionEnum.MANAGE_ADMIN_RIGHTS)),
 ):
-    return service.set_admin(user_id)
-
-
-@router.patch("/users/{user_id}/revoke-admin", response_model=UserRead)
-def revoke_admin(
-    user_id: int,
-    service: UserService = Depends(get_user_service),
-    _: int = Depends(require_permission(PermissionEnum.MANAGE_ADMIN_RIGHTS)),
-):
-    return service.revoke_admin(user_id)
+    return service.set_admin_status(user_id, is_admin=payload.is_admin)
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)

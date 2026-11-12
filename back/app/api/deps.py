@@ -4,10 +4,11 @@ from sqlalchemy.orm import Session
 
 from app.core.permisions import PermissionEnum
 from app.db.database import get_db
-from app.domains.user import User
+from app.db.models.auth import User
 from app.repositories.analytics.procedure_repository import ProcedureRepository
+from app.repositories.auth import UserRepository
+from app.repositories.auth.authorization_repository import AuthorizationRepository
 from app.repositories.authentication_repository import AuthenticationRepository
-from app.repositories.authorization_repository import AuthorizationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
@@ -21,7 +22,6 @@ from app.repositories.role_permission_repository import RolePermissionRepository
 from app.repositories.role_repository import RoleRepository
 from app.repositories.snapshot_repository import SnapshotRepository
 from app.repositories.specific_repository import SpecificRepository
-from app.repositories.user_repository import UserRepository
 from app.repositories.user_role_repository import UserRoleRepository
 from app.services.analytics.procedure_service import ProcedureService
 from app.services.authentication_service import AuthenticationService
@@ -68,12 +68,6 @@ def get_user_role_repository(db: Session = Depends(get_db)) -> UserRoleRepositor
 
 def get_permission_repository(db: Session = Depends(get_db)) -> PermissionRepository:
     return PermissionRepository(db)
-
-
-def get_authorization_repository(
-    db: Session = Depends(get_db),
-) -> AuthorizationRepository:
-    return AuthorizationRepository(db)
 
 
 def get_counter_update_repository(
@@ -157,10 +151,10 @@ def get_counter_update_service(
 
 
 def get_authorization_service(
-    authorization_repo: AuthorizationRepository = Depends(get_authorization_repository),
+    db: Session = Depends(get_db),
 ) -> AuthorizationService:
     return AuthorizationService(
-        authorization_repo=authorization_repo,
+        authorization_repo=AuthorizationRepository(db),
     )
 
 

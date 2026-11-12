@@ -16,7 +16,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=true())
     is_admin: Mapped[bool] = mapped_column(Boolean, server_default=false())
-    name: Mapped[str | None] = mapped_column(String(255))
+    name: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         server_default=text("SYSDATETIME()"),

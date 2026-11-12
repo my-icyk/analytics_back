@@ -1,4 +1,5 @@
-from sqlalchemy import select
+from sqlalchemy import select, text
+from sqlalchemy.engine import RowMapping
 from sqlalchemy.orm import Session
 
 from app.db.models.auth import User
@@ -35,3 +36,26 @@ class UserRepository:
         self._session.add(user)
         self._session.flush()
         return user
+
+    def get_employee_details(self, employee_ref: str) -> RowMapping | None:
+        sql = """
+            select
+                departament_name,
+                hire_date,
+                work,
+                birth_date,
+                top_departament_name
+            from Adaugari.dbo.DirectoryEmployees
+            WHERE
+                ref = :employee_ref
+        """
+        row = (
+            self._session.execute(text(sql), {"employee_ref": employee_ref})
+            .mappings()
+            .first()
+        )
+
+        return row if row is not None else None
+
+    def delete(self, user: User) -> None:
+        self._session.delete(user)

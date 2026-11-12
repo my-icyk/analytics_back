@@ -13,14 +13,14 @@ from app.core.security import (
     hash_token,
     verify_password,
 )
-from app.domains.user import User
+from app.db.models.auth import User
 from app.exceptions.exceptions import (
     InactiveUserError,
     InvalidCredentialsError,
     InvalidTokenError,
 )
+from app.repositories.auth import UserRepository
 from app.repositories.authentication_repository import AuthenticationRepository
-from app.repositories.user_repository import UserRepository
 
 
 class AuthenticationService:

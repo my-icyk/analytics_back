@@ -10,13 +10,9 @@ from app.api.schemas.employee import (
     PositiveId,
 )
 from app.core.permisions import PermissionEnum
-from app.db.base import Base
-from app.db.models.auth import User
 from app.services.employees.credit_service import CreditService
 
 router = APIRouter()
-
-print(User.email)
 
 
 @router.get(
@@ -57,8 +53,5 @@ def create_credit(
     current_user=Depends(require_permission(PermissionEnum.HR_CREDIT_CREATE)),
     service: CreditService = Depends(get_credit_service),
 ):
-    print(current_user)
-    print("api.users" in Base.metadata.tables)
-    print("hr.employee_credit" in Base.metadata.tables)
 
     return service.create(data, created_by=current_user.id)

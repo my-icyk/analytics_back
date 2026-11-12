@@ -1,13 +1,17 @@
-from app.api.v1.schemas.user import EmployeeDetails
+from sqlalchemy import RowMapping
+
 from app.core.security import (
     get_password_hash,
     validate_password_strength,
     verify_password,
 )
-from app.domains.user import User
-from app.exceptions.exceptions import BadRequestError, ForbiddenError, UserNotFoundError
-from app.repositories.base import LookupResponse
-from app.repositories.user_repository import UserRepository
+from app.db.models.auth import User
+from app.exceptions.exceptions import (
+    BadRequestError,
+    ForbiddenError,
+    NotFoundError,
+)
+from app.repositories.auth import UserRepository
 
 
 class UserService:
@@ -25,14 +29,15 @@ class UserService:
         user = self.user_repository.get_by_id(user_id)
 
         if user is None:
-            raise UserNotFoundError(user_id)
+            raise NotFoundError(entity="User", field="id", value=str(user_id))
 
         return user
 
-    def get_employee_details(self, caller: User) -> EmployeeDetails | None:
-        if caller.employee_ref is None:
+    def get_employee_details(self, user: User) -> RowMapping | None:
+        if user.employee_ref is None:
             return None
-        return self.user_repository.get_employee_details(caller.employee_ref)
+
+        return self.user_repository.get_employee_details(user.employee_ref)
 
     def create_user(
         self, username: str, password: str, name: str, email: str | None = None
@@ -45,42 +50,36 @@ class UserService:
 
     def delete_user(self, user_id: int) -> None:
 
-        user = self.user_repository.get_by_id(user_id)
+        user = self.get_user(user_id)
 
-        if user is None:
-            raise UserNotFoundError(user_id)
-
-        self.user_repository.delete(user_id)
+        self.user_repository.delete(user)
 
     def update_user(
-        self, user_id: int, username: str, email: str | None, is_active: bool, name: str
+        self,
+        user_id: int,
+        username: str,
+        email: str | None,
+        is_active: bool,
+        name: str,
     ) -> User:
-        self.get_user(user_id)
-        # TODO: Need Check for username and i think for email
-        return self.user_repository.update_user(
-            user_id, username, email=email, is_active=is_active, name=name
-        )
+        user = self.get_user(user_id)
+        user.username = username
+        user.email = email
+        user.is_active = is_active
+        user.name = name
+        return user
 
     def get_all_users(self) -> list[User]:
         return self.user_repository.get_all_users()
 
-    def set_admin(self, user_id: int) -> User:
-        self.get_user(user_id)
-
-        return self.user_repository.set_admin(user_id)
-
-    def revoke_admin(self, user_id: int) -> User:
-
-        self.get_user(user_id)
-        return self.user_repository.revoke_admin(user_id)
-
-    def lookup_users(self, search: str) -> list[LookupResponse]:
-        return self.user_repository.lookup_users(search)
+    def set_admin_status(self, user_id: int, *, is_admin: bool) -> User:
+        user = self.get_user(user_id)
+        user.is_admin = is_admin
+        return user
 
     def change_own_password(
         self, user: User, current_password: str, new_password: str
     ) -> None:
-
         if not verify_password(current_password, user.hashed_password):
             raise ForbiddenError("Current password is incorrect")
 
@@ -99,4 +98,4 @@ class UserService:
         if verify_password(new_password, user.hashed_password):
             raise BadRequestError("New password must be different from the current one")
 
-        self.user_repository.update_password(user.id, get_password_hash(new_password))
+        user.hashed_password = get_password_hash(new_password)

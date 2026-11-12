@@ -1,7 +1,7 @@
-from app.core.permisions import PermissionEnum
-from app.domains.user import User
+from app.core import PermissionEnum
+from app.db.models.auth import User
 from app.exceptions.exceptions import ForbiddenError
-from app.repositories.authorization_repository import AuthorizationRepository
+from app.repositories.auth import AuthorizationRepository
 
 
 class AuthorizationService:

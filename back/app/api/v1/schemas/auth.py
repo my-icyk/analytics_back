@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool
 
 
 class AssignRolePermissionsRequest(BaseModel):
@@ -7,3 +7,7 @@ class AssignRolePermissionsRequest(BaseModel):
 
 class AssignUserRolesRequest(BaseModel):
     role_ids: list[int] = Field(default_factory=list)
+
+
+class UserAdminUpdate(BaseModel):
+    is_admin: StrictBool
