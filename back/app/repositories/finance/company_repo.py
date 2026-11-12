@@ -1,7 +1,7 @@
 from sqlalchemy import select, true
 from sqlalchemy.orm import Session
 
-from app.models.finance.company import Company
+from app.db.models.finance.company import Company
 
 
 class CompanyRepo:

@@ -27,6 +27,8 @@ from app.services.analytics.procedure_service import ProcedureService
 from app.services.authentication_service import AuthenticationService
 from app.services.authorization_service import AuthorizationService
 from app.services.counter_update_service import CounterUpdateService
+from app.services.employees.credit_service import CreditService
+from app.services.employees.employee_service import EmployeeService
 from app.services.finance_group_service import FinanceGroupService
 from app.services.finance_rule_service import FinanceRuleService
 from app.services.role_permission_service import RolePermissionService
@@ -247,3 +249,15 @@ def get_procedure_service(
     return ProcedureService(
         procedure_repository=procedure_repository,
     )
+
+
+def get_employee_service(
+    session: Session = Depends(get_db),
+) -> EmployeeService:
+    return EmployeeService(session=session)
+
+
+def get_credit_service(
+    session: Session = Depends(get_db),
+) -> CreditService:
+    return CreditService(session=session)

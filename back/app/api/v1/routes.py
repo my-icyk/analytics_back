@@ -5,6 +5,7 @@ from app.api.v1.endpoints import (
     auth,
     counters_update,
     divisions,
+    employees,
     finance,
     group_rules,
     groups,
@@ -28,6 +29,7 @@ api_router.include_router(counters_update.exceptions_router)
 api_router.include_router(specific.router)
 api_router.include_router(finance.router)
 api_router.include_router(analytics.router)
+api_router.include_router(employees.router)
 api_router.include_router(divisions.router, prefix="/finance", tags=["finance"])
 api_router.include_router(groups.router, prefix="/finance", tags=["finance"])
 api_router.include_router(group_rules.router, prefix="/finance", tags=["finance"])

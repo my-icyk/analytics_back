@@ -1,7 +1,7 @@
 from sqlalchemy import delete, select, text, update
 from sqlalchemy.orm import Session
 
-from app.models.analytics.procedure import Procedure, ProcedureHistory
+from app.db.models.analytics.procedure import Procedure, ProcedureHistory
 
 
 class ProcedureRepository:

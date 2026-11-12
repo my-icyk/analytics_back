@@ -19,6 +19,15 @@ class PermissionEnum(StrEnum):
     USER_UPDATE = "user:update"
     USER_DELETE = "user:delete"
     AUTH_USER_CHANGE_PASSWORD = "auth:user:change_password"
+    # HR (Human Resources)
+    HR_EMPLOYEE_READ = "hr:employee:read"
+    HR_EMPLOYEE_UPDATE = "hr:employee:update"
+
+    HR_CREDIT_CREATE = "hr:employee_credit:create"
+    HR_CREDIT_READ = "hr:employee_credit:read"
+    HR_CREDIT_UPDATE = "hr:employee_credit:update"
+    HR_CREDIT_DELETE = "hr:employee_credit:delete"
+
     # analytics
     ANALYTICS_PROCEDURE_CREATE = "analytics:procedure:create"
     ANALYTICS_PROCEDURE_READ = "analytics:procedure:read"
