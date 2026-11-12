@@ -24,6 +24,7 @@ from app.repositories.snapshot_repository import SnapshotRepository
 from app.repositories.specific_repository import SpecificRepository
 from app.repositories.user_role_repository import UserRoleRepository
 from app.services.analytics.procedure_service import ProcedureService
+from app.services.auth.user_service import UserService
 from app.services.authentication_service import AuthenticationService
 from app.services.authorization_service import AuthorizationService
 from app.services.counter_update_service import CounterUpdateService
@@ -34,7 +35,6 @@ from app.services.finance_rule_service import FinanceRuleService
 from app.services.role_permission_service import RolePermissionService
 from app.services.snapshot import SnapshotService
 from app.services.specific_service import SpecificService
-from app.services.user_service import UserService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=True)
 
