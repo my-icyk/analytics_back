@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.api.schemas.employee import PurchaseLimitUpdate
-from app.db.models.employees import Employee
+from app.db.models.hr import Employee
 from app.exceptions.exceptions import NotFoundError
 from app.repositories.employees import CreditRepository, EmployeeRepository
 from app.services.common import WriteService

@@ -3,7 +3,7 @@ from decimal import Decimal
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from app.db.models.employees.employee import Employee
+from app.db.models.hr.employee import Employee
 
 
 class EmployeeRepository:

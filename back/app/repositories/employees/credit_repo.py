@@ -4,12 +4,12 @@ from decimal import Decimal
 from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.db.models.employees.credit import (
+from app.db.models.hr.credit import (
     CreditRepartition,
     CreditStatus,
     EmployeeCredit,
 )
-from app.db.models.employees.employee import Employee
+from app.db.models.hr.employee import Employee
 
 
 class CreditRepository:
