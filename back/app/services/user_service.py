@@ -1,4 +1,5 @@
 from sqlalchemy import RowMapping
+from sqlalchemy.orm import Session
 
 from app.core.security import (
     get_password_hash,
@@ -12,10 +13,12 @@ from app.exceptions.exceptions import (
     NotFoundError,
 )
 from app.repositories.auth import UserRepository
+from app.services.common import WriteService
 
 
-class UserService:
-    def __init__(self, user_repository: UserRepository):
+class UserService(WriteService):
+    def __init__(self, session: Session, user_repository: UserRepository):
+        super().__init__(session)
         self.user_repository = user_repository
 
     def _get_active_user(self, user_id: int) -> User:
@@ -43,16 +46,21 @@ class UserService:
         self, username: str, password: str, name: str, email: str | None = None
     ) -> User:
         validate_password_strength(password)
-        hashed = get_password_hash(password)
-        return self.user_repository.create(
-            username=username, hashed_password=hashed, name=name, email=email
-        )
+        hashed_password = get_password_hash(password)
+
+        with self._write():
+            user = self.user_repository.create(
+                username=username,
+                hashed_password=hashed_password,
+                name=name,
+                email=email,
+            )
+        return user
 
     def delete_user(self, user_id: int) -> None:
-
-        user = self.get_user(user_id)
-
-        self.user_repository.delete(user)
+        with self._write():
+            user = self.get_user(user_id)
+            self.user_repository.delete(user)
 
     def update_user(
         self,
@@ -62,35 +70,39 @@ class UserService:
         is_active: bool,
         name: str,
     ) -> User:
-        user = self.get_user(user_id)
-        user.username = username
-        user.email = email
-        user.is_active = is_active
-        user.name = name
+        with self._write():
+            user = self.get_user(user_id)
+            user.username = username
+            user.email = email
+            user.is_active = is_active
+            user.name = name
         return user
 
     def get_all_users(self) -> list[User]:
         return self.user_repository.get_all_users()
 
     def set_admin_status(self, user_id: int, *, is_admin: bool) -> User:
-        user = self.get_user(user_id)
-        user.is_admin = is_admin
+        with self._write():
+            user = self.get_user(user_id)
+            user.is_admin = is_admin
         return user
 
     def change_own_password(
         self, user: User, current_password: str, new_password: str
     ) -> None:
-        if not verify_password(current_password, user.hashed_password):
-            raise ForbiddenError("Current password is incorrect")
+        with self._write():
+            if not verify_password(current_password, user.hashed_password):
+                raise ForbiddenError("Current password is incorrect")
 
-        self._set_password(user, new_password)
+            self._set_password(user, new_password)
 
     def reset_password(self, caller: User, user_id: int, new_password: str) -> None:
         if not caller.is_admin:
             raise ForbiddenError("You can't reset this user's password")
 
-        user = self._get_active_user(user_id)
-        self._set_password(user, new_password)
+        with self._write():
+            user = self._get_active_user(user_id)
+            self._set_password(user, new_password)
 
     def _set_password(self, user: User, new_password: str) -> None:
         validate_password_strength(new_password)

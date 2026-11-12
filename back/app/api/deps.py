@@ -118,10 +118,11 @@ def get_specific_service(
     return SpecificService(specific_repo)
 
 
-def get_user_service(
-    user_repo: UserRepository = Depends(get_user_repository),
-) -> UserService:
-    return UserService(user_repo)
+def get_user_service(db: Session = Depends(get_db)) -> UserService:
+    return UserService(
+        session=db,
+        user_repository=UserRepository(db),
+    )
 
 
 def get_role_permission_service(
