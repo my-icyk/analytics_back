@@ -14,7 +14,6 @@ from app.repositories.auth.role_permission_repository import RolePermissionRepos
 from app.repositories.auth.role_repository import RoleRepository
 from app.repositories.auth.session_repository import SessionRepository
 from app.repositories.auth.user_role_repository import UserRoleRepository
-from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
@@ -45,10 +44,6 @@ session_cookie = APIKeyCookie(name=settings.SESSION_COOKIE_NAME, auto_error=Fals
 # TODO: WTF HERE IS HAPPENDS
 def get_specific_repository(db: Session = Depends(get_db)) -> SpecificRepository:
     return SpecificRepository(db)
-
-
-def get_auth_repository(db: Session = Depends(get_db)) -> AuthenticationRepository:
-    return AuthenticationRepository(db)
 
 
 def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
