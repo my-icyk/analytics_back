@@ -1,7 +1,8 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends
+from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.core.permisions import PermissionEnum
 from app.db.database import get_db
 from app.db.models.auth import User
@@ -11,6 +12,7 @@ from app.repositories.auth.authorization_repository import AuthorizationReposito
 from app.repositories.auth.permision_repository import PermissionRepository
 from app.repositories.auth.role_permission_repository import RolePermissionRepository
 from app.repositories.auth.role_repository import RoleRepository
+from app.repositories.auth.session_repository import SessionRepository
 from app.repositories.auth.user_role_repository import UserRoleRepository
 from app.repositories.authentication_repository import AuthenticationRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
@@ -36,7 +38,8 @@ from app.services.role_permission_service import RolePermissionService
 from app.services.snapshot import SnapshotService
 from app.services.specific_service import SpecificService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=True)
+settings = get_settings()
+session_cookie = APIKeyCookie(name=settings.SESSION_COOKIE_NAME, auto_error=False)
 
 
 # TODO: WTF HERE IS HAPPENDS
@@ -105,11 +108,8 @@ def get_group_type_repository(db: Session = Depends(get_db)) -> GroupTypeReposit
 
 
 # Services
-def get_auth_service(
-    user_repo: UserRepository = Depends(get_user_repository),
-    auth_repo: AuthenticationRepository = Depends(get_auth_repository),
-) -> AuthenticationService:
-    return AuthenticationService(user_repo, auth_repo)
+def get_auth_service(db: Session = Depends(get_db)) -> AuthenticationService:
+    return AuthenticationService(db, SessionRepository(db))
 
 
 def get_specific_service(
@@ -154,36 +154,22 @@ def get_authorization_service(
     )
 
 
-# requirements
 def require_permission(permission: PermissionEnum):
-    def permission_dependency(
-        token: str | None = Depends(oauth2_scheme),
-        auth_service: AuthenticationService = Depends(get_auth_service),
-        authorization_service: AuthorizationService = Depends(
-            get_authorization_service
-        ),
+    def check(
+        user: User = Depends(get_current_user),
+        service: AuthorizationService = Depends(get_authorization_service),
     ) -> User:
-        if token is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-            )
-        user = auth_service.authenticate_user(token)
-
-        authorization_service.require_permission(
-            user,
-            permission,
-        )
+        service.require_permission(user, permission)
         return user
 
-    return permission_dependency
+    return check
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    auth_service: AuthenticationService = Depends(get_auth_service),
+    token: str | None = Depends(session_cookie),
+    service: AuthenticationService = Depends(get_auth_service),
 ) -> User:
-    return auth_service.authenticate_user(token)
+    return service.authenticate_user(token)
 
 
 def get_company_repository(db: Session = Depends(get_db)) -> CompanyRepo:

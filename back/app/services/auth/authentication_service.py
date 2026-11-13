@@ -1,112 +1,61 @@
-"""
-Auth service — orchestrates UserRepository + RefreshTokenRepository +
-security.py to implement login, refresh-token rotation, and logout.
-"""
+import secrets
+from datetime import UTC, datetime
 
-from datetime import datetime
+from sqlalchemy.orm import Session
 
-from app.core.security import (
-    create_access_token,
-    create_refresh_token,
-    decode_access_token,
-    decode_refresh_token,
-    hash_token,
-    verify_password,
-)
+from app.config import get_settings
+from app.core.security import hash_token, verify_password
 from app.db.models.auth import User
 from app.exceptions.exceptions import (
     InactiveUserError,
     InvalidCredentialsError,
-    InvalidTokenError,
+    InvalidSessionError,
 )
-from app.repositories.auth import UserRepository
-from app.repositories.authentication_repository import AuthenticationRepository
+from app.repositories.auth import SessionRepository
+from app.services.common import WriteService
+
+settings = get_settings()
 
 
-class AuthenticationService:
-    def __init__(self, user_repo: UserRepository, auth_repo: AuthenticationRepository):
-        self.user_repo = user_repo
-        self.auth_repo = auth_repo
+class AuthenticationService(WriteService):
+    def __init__(self, session: Session, sessions: SessionRepository):
+        super().__init__(session)
+        self._sessions = sessions
 
-    # -----------------------------------------------------------------
-    def login(self, name: str, password: str) -> tuple[str, str, datetime]:
-        """Returns (access_token, raw_refresh_token, refresh_expires_at)."""
-        user = self.user_repo.get_by_username(name)
+    def login(self, username: str, password: str) -> str:
+        with self._write():
+            user = self._sessions.get_user_for_login(username)
 
-        if user is None or not verify_password(password, user.hashed_password):
-            raise InvalidCredentialsError()
+            if user is None or not verify_password(password, user.hashed_password):
+                raise InvalidCredentialsError()
 
-        if not user.is_active:
-            raise InactiveUserError(user.username)
+            if not user.is_active:
+                raise InactiveUserError(user.username)
 
-        access_token = create_access_token({"sub": str(user.id)})
-        raw_refresh, refresh_hash, expires_at = create_refresh_token(
-            {"sub": str(user.id)}
-        )
-        self.auth_repo.create(user.id, refresh_hash, expires_at)
+            token = secrets.token_urlsafe(32)
 
-        return access_token, raw_refresh, expires_at
+            # SQL Server DATETIME2 stores no offset. Store UTC consistently.
+            now = datetime.now(UTC).replace(tzinfo=None)
+            self._sessions.replace(
+                user_id=user.id,
+                token_hash=hash_token(token),
+                created_at=now,
+                expires_at=now + settings.SESSION_LIFETIME,
+            )
 
-    # -----------------------------------------------------------------
-    def refresh(self, raw_refresh_token: str) -> tuple[str, str, datetime]:
-        """
-        Validates + rotates a refresh token. Returns a brand new
-        (access_token, raw_refresh_token, refresh_expires_at) triple.
-        The old refresh token is revoked as part of this call.
-        """
-        payload = decode_refresh_token(raw_refresh_token)
-        if payload is None:
-            raise InvalidTokenError()
+        return token
 
-        token_hash = hash_token(raw_refresh_token)
-        stored = self.auth_repo.get_by_hash(token_hash)
+    def authenticate_user(self, token: str | None) -> User:
+        if not token:
+            raise InvalidSessionError()
 
-        if stored is None:
-            raise InvalidTokenError()
-
-        if stored["revoked_at"] is not None:
-            # This token was already used/rotated once before. Seeing it
-            # again means either a replay or a stolen token being reused —
-            # in both cases, the safest move is to kill every active
-            # refresh token for this user and force a fresh login.
-            self.auth_repo.revoke_all_for_user(stored["user_id"])
-            raise InvalidTokenError()
-
-        user = self.user_repo.get_by_id(stored["user_id"])
-        if user is None or not user.is_active:
-            raise InvalidTokenError()
-
-        access_token = create_access_token({"sub": str(user.id)})
-        new_raw_refresh, new_hash, new_expires_at = create_refresh_token(
-            {"sub": str(user.id)}
-        )
-        new_row = self.auth_repo.create(user.id, new_hash, new_expires_at)
-        self.auth_repo.revoke(stored["id"], replaced_by=new_row["id"])
-
-        return access_token, new_raw_refresh, new_expires_at
-
-    # -----------------------------------------------------------------
-    def logout(self, raw_refresh_token: str) -> None:
-        token_hash = hash_token(raw_refresh_token)
-        stored = self.auth_repo.get_by_hash(token_hash)
-        if stored is not None and stored["revoked_at"] is None:
-            self.auth_repo.revoke(stored["id"])
-
-    def authenticate_user(self, token: str) -> User:
-        """Return the active user for a valid access token."""
-        payload = decode_access_token(token)
-        if payload is None:
-            raise InvalidTokenError()
-
-        try:
-            user_id = int(payload["sub"])
-        except (KeyError, TypeError, ValueError):
-            raise InvalidTokenError() from None
-
-        user = self.user_repo.get_by_id(user_id)
+        user = self._sessions.get_active_user(hash_token(token))
         if user is None:
-            raise InvalidTokenError()
-        if not user.is_active:
-            raise InactiveUserError(user.username)
+            raise InvalidSessionError()
 
         return user
+
+    def logout(self, token: str | None) -> None:
+        if token:
+            with self._write():
+                self._sessions.delete_by_token_hash(hash_token(token))

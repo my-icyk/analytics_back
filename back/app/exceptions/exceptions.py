@@ -6,6 +6,11 @@ class InvalidCredentialsError(Exception):
         super().__init__("Invalid name or password")
 
 
+class InvalidSessionError(Exception):
+    def __init__(self):
+        super().__init__("Invalid or expired session")
+
+
 class InvalidTokenError(Exception):
     def __init__(self):
         super().__init__("Invalid or expired token")

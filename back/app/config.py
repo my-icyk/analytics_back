@@ -1,3 +1,4 @@
+from datetime import timedelta
 from functools import lru_cache
 
 from dotenv import load_dotenv
@@ -24,6 +25,8 @@ class Settings(BaseSettings):
 
     # query limits for get all methods
     PAGE_LIMIT: int = 10
+    SESSION_LIFETIME: timedelta = timedelta(hours=8)
+    SESSION_COOKIE_NAME: str = "__Host-analytics_session"
 
 
 @lru_cache
