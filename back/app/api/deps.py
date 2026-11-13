@@ -24,9 +24,9 @@ from app.repositories.group_type_repository import GroupTypeRepository
 from app.repositories.snapshot_repository import SnapshotRepository
 from app.repositories.specific_repository import SpecificRepository
 from app.services.analytics.procedure_service import ProcedureService
+from app.services.auth.authentication_service import AuthenticationService
+from app.services.auth.authorization_service import AuthorizationService
 from app.services.auth.user_service import UserService
-from app.services.authentication_service import AuthenticationService
-from app.services.authorization_service import AuthorizationService
 from app.services.counter_update_service import CounterUpdateService
 from app.services.employees.credit_service import CreditService
 from app.services.employees.employee_service import EmployeeService

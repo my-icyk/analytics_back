@@ -7,7 +7,7 @@ from app.api.deps import get_auth_service
 from app.config import get_settings
 from app.exceptions.exceptions import InvalidTokenError
 from app.schemas.auth_schemas import LoginRequest, TokenResponse
-from app.services.authentication_service import AuthenticationService
+from app.services.auth.authentication_service import AuthenticationService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
