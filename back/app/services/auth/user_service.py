@@ -8,6 +8,7 @@ from app.core.security import (
 )
 from app.db.models.auth import User
 from app.exceptions.exceptions import (
+    AlreadyExistsError,
     BadRequestError,
     ForbiddenError,
     NotFoundError,
@@ -111,3 +112,20 @@ class UserService(WriteService):
             raise BadRequestError("New password must be different from the current one")
 
         user.hashed_password = get_password_hash(new_password)
+
+    def create_admin_user(self, username: str, password: str, name: str) -> User:
+        validate_password_strength(password)
+        hashed_password = get_password_hash(password)
+
+        with self._write():
+            if self.user_repository.get_by_username(username) is not None:
+                raise AlreadyExistsError("User", "username", username)
+
+            user = self.user_repository.create(
+                username=username,
+                hashed_password=hashed_password,
+                name=name,
+            )
+            user.is_admin = True
+
+        return user
