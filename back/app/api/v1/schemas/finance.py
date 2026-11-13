@@ -126,10 +126,12 @@ class TargetUpdate(Base):
 class DepartmentRepartitionRead(Base):
     id: int
     department_id: int
+    department_code: str
     department_name: str
     valid_from: date
     valid_to: date | None
     is_active: bool
+    brand_name: str
 
 
 class DepartmentRepartitionCreate(Base):

@@ -7,7 +7,7 @@ from app.api.deps import (
     get_finance_rule_service,
     require_permission,
 )
-from app.api.v1.schemas.common import Page
+from app.api.v1.schemas.common import IdResponse, Page
 from app.api.v1.schemas.finance import (
     DepartmentRead,
     DepartmentRepartitionCreate,
@@ -153,8 +153,7 @@ def get_department_repartitions(
 
 
 @router.post(
-    "/{id}/repartitions",
-    status_code=status.HTTP_201_CREATED,
+    "/{id}/repartitions", status_code=status.HTTP_201_CREATED, response_model=IdResponse
 )
 def create_department_repartition(
     id: int,
@@ -165,7 +164,7 @@ def create_department_repartition(
     id = service.create_department_repartition(
         payload.department_id, id, payload.valid_from, payload.valid_to
     )
-    return {"id": id}
+    return IdResponse(id=id)
 
 
 @router.put(
