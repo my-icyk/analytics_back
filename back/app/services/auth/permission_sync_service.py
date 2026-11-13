@@ -1,12 +1,12 @@
 from sqlalchemy.orm import Session
 
 from app.core.permisions import PermissionEnum
-from app.repositories.auth.permision_repository import PermissionRepository
+from app.repositories.auth.permission_repo import PermissionRepo
 from app.services.common import WriteService
 
 
 class PermissionSyncService(WriteService):
-    def __init__(self, session: Session, repository: PermissionRepository) -> None:
+    def __init__(self, session: Session, repository: PermissionRepo) -> None:
         super().__init__(session)
         self._repository = repository
 

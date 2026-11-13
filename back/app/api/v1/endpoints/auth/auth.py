@@ -8,13 +8,8 @@ from app.config import get_settings
 from app.schemas.auth_schemas import LoginRequest
 from app.services.auth.authentication_service import AuthenticationService
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter()
 settings = get_settings()
-
-
-print(settings.SESSION_LIFETIME)
-
-print(settings.SESSION_COOKIE_NAME, settings.COOKIE_SECURE)
 
 
 @router.post("/login", status_code=204)

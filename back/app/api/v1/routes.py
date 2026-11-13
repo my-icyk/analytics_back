@@ -4,33 +4,20 @@ from app.api.v1.endpoints import (
     analytics,
     auth,
     counters_update,
-    divisions,
     employees,
     finance,
-    group_rules,
-    groups,
     health,
-    permissions,
-    roles,
-    snapshots,
     specific,
-    users,
 )
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router)
 api_router.include_router(health.router)
-api_router.include_router(users.router)
-api_router.include_router(roles.router)
-api_router.include_router(permissions.router)
+
 api_router.include_router(counters_update.counter_router)
 api_router.include_router(counters_update.exceptions_router)
 api_router.include_router(specific.router)
 api_router.include_router(finance.router)
 api_router.include_router(analytics.router)
 api_router.include_router(employees.router)
-api_router.include_router(divisions.router, prefix="/finance", tags=["finance"])
-api_router.include_router(groups.router, prefix="/finance", tags=["finance"])
-api_router.include_router(group_rules.router, prefix="/finance", tags=["finance"])
-api_router.include_router(snapshots.router, prefix="/finance", tags=["finance"])

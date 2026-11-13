@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.db.database import SessionLocal
 from app.exceptions.exceptions import AlreadyExistsError, PasswordMismatchError
-from app.repositories.auth import UserRepository
+from app.repositories.auth import UserRepo
 from app.services.auth import UserService
 from app.services.common import Conflict
 
@@ -31,7 +31,7 @@ def main() -> int:
 
     try:
         with SessionLocal() as db:
-            service = UserService(session=db, user_repository=UserRepository(db))
+            service = UserService(session=db, user_repo=UserRepo(db))
             service.create_admin_user(username=username, password=password, name=name)
     except (AlreadyExistsError, PasswordMismatchError, ValueError) as exc:
         print(f"Could not create admin: {exc}", file=sys.stderr)

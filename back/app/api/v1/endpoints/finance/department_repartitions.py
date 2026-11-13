@@ -8,7 +8,7 @@ from app.core.permisions import PermissionEnum
 from app.domains.user import User
 from app.filters.finance import DepartmentRepartitionFilter
 from app.read_models.finance import DepartmentRepartitionDetails
-from app.services.finance_group_service import FinanceGroupService
+from app.services.finance.finance_group_service import FinanceGroupService
 
 router = APIRouter()
 

@@ -6,9 +6,9 @@ from app.api.deps import (
 )
 from app.core.permisions import PermissionEnum
 from app.schemas.permission_schema import PermissionRead
-from app.services.role_permission_service import RolePermissionService
+from app.services.auth.role_permission_service import RolePermissionService
 
-router = APIRouter(prefix="/permissions", tags=["permissions"])
+router = APIRouter()
 
 
 @router.get("", response_model=list[PermissionRead])

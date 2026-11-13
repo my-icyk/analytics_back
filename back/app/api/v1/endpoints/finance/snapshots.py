@@ -15,7 +15,7 @@ from app.domains.snapshot import (
 from app.domains.user import User
 from app.services.snapshot import SnapshotService
 
-router = APIRouter(prefix="/snapshots")
+router = APIRouter()
 
 
 @router.get("", response_model=list[Snapshot])

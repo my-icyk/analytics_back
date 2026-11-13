@@ -24,10 +24,10 @@ from app.core.permisions import PermissionEnum
 from app.domains.finance import GroupFolder
 from app.filters.finance import GroupFilter
 from app.repositories.base import LookupResponse
-from app.services.finance_group_service import FinanceGroupService
-from app.services.finance_rule_service import FinanceRuleService
+from app.services.finance.finance_group_service import FinanceGroupService
+from app.services.finance.finance_rule_service import FinanceRuleService
 
-router = APIRouter(prefix="/groups")
+router = APIRouter()
 
 
 @router.get("/departments", response_model=list[DepartmentRead])
@@ -79,11 +79,11 @@ def get_groups(
     _=Depends(require_permission(PermissionEnum.FINANCE_GROUP_READ)),
 ):
 
-    rows = service.get_groups_page(params)
+    rows, total = service.get_groups_page(params)
 
     return Page(
-        items=rows.items,
-        total=rows.total,
+        items=rows,
+        total=total,
         page=params.page,
         limit=params.limit,
     )

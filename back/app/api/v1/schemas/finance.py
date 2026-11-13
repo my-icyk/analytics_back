@@ -1,6 +1,7 @@
 from datetime import date
+from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Base(BaseModel):
@@ -85,21 +86,21 @@ class RuleRead(Base):
     name: str
     valid_from: date
     valid_to: date | None
-    percent_value: float
+    percent_value: Decimal
 
 
 class RuleCreate(Base):
     name: str
     valid_from: date
     valid_to: date | None = None
-    percent_value: float
+    percent_value: Decimal = Field(ge=0, le=100)
 
 
 class RuleUpdate(Base):
     name: str
     valid_from: date
     valid_to: date | None = None
-    percent_value: float
+    percent_value: Decimal = Field(ge=0, le=100)
 
 
 class TargetRead(Base):
@@ -107,19 +108,19 @@ class TargetRead(Base):
     group_id: int
     group_name: str
     allocation_type: str
-    percent_value: float | None
+    percent_value: Decimal | None
 
 
 class TargetCreate(Base):
     group_id: int
     allocation_type: str
-    percent_value: float | None
+    percent_value: Decimal | None
 
 
 class TargetUpdate(Base):
     group_id: int
     allocation_type: str
-    percent_value: float | None
+    percent_value: Decimal | None
 
 
 class DepartmentRepartitionRead(Base):

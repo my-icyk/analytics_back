@@ -4,7 +4,7 @@ from app.api.deps import get_finance_group_service, require_permission
 from app.api.v1.schemas.finance import CompanyRead
 from app.core.permisions import PermissionEnum
 from app.domains.user import User
-from app.services.finance_group_service import FinanceGroupService
+from app.services.finance.finance_group_service import FinanceGroupService
 
 router = APIRouter()
 

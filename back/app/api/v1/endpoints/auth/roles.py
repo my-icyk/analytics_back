@@ -9,9 +9,9 @@ from app.api.v1.schemas.common import IdResponse
 from app.core.permisions import PermissionEnum
 from app.schemas.permission_schema import PermissionRead
 from app.schemas.role_schema import RoleCreate, RoleListItem, RoleUpdate
-from app.services.role_permission_service import RolePermissionService
+from app.services.auth.role_permission_service import RolePermissionService
 
-router = APIRouter(prefix="/roles", tags=["roles"])
+router = APIRouter()
 
 
 # NEED TO REFACTOR TO GET ALL ROLES

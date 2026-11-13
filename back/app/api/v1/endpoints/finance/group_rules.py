@@ -14,9 +14,9 @@ from app.api.v1.schemas.finance import (
     TargetUpdate,
 )
 from app.core.permisions import PermissionEnum
-from app.services.finance_rule_service import FinanceRuleService
+from app.services.finance.finance_rule_service import FinanceRuleService
 
-router = APIRouter(prefix="/groups/{group_id}/rules")
+router = APIRouter()
 
 
 @router.get("/{id}", response_model=RuleRead)

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.models.auth import Role, UserRole
 
 
-class UserRoleRepository:
+class UserRoleRepo:
     def __init__(self, session: Session):
         self._session = session
 

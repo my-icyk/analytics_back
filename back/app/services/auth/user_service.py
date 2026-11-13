@@ -13,14 +13,14 @@ from app.exceptions.exceptions import (
     ForbiddenError,
     NotFoundError,
 )
-from app.repositories.auth import UserRepository
+from app.repositories.auth import UserRepo
 from app.services.common import WriteService
 
 
 class UserService(WriteService):
-    def __init__(self, session: Session, user_repository: UserRepository):
+    def __init__(self, session: Session, *, user_repo: UserRepo):
         super().__init__(session)
-        self.user_repository = user_repository
+        self._users = user_repo
 
     def _get_active_user(self, user_id: int) -> User:
         user = self.get_user(user_id)  # raises NotFound if missing
@@ -30,7 +30,7 @@ class UserService(WriteService):
 
     def get_user(self, user_id: int) -> User:
 
-        user = self.user_repository.get_by_id(user_id)
+        user = self._users.get_by_id(user_id)
 
         if user is None:
             raise NotFoundError(entity="User", field="id", value=str(user_id))
@@ -41,7 +41,7 @@ class UserService(WriteService):
         if user.employee_ref is None:
             return None
 
-        return self.user_repository.get_employee_details(user.employee_ref)
+        return self._users.get_employee_details(user.employee_ref)
 
     def create_user(
         self, username: str, password: str, name: str, email: str | None = None
@@ -50,7 +50,7 @@ class UserService(WriteService):
         hashed_password = get_password_hash(password)
 
         with self._write():
-            user = self.user_repository.create(
+            user = self._users.create(
                 username=username,
                 hashed_password=hashed_password,
                 name=name,
@@ -61,7 +61,7 @@ class UserService(WriteService):
     def delete_user(self, user_id: int) -> None:
         with self._write():
             user = self.get_user(user_id)
-            self.user_repository.delete(user)
+            self._users.delete(user)
 
     def update_user(
         self,
@@ -80,7 +80,7 @@ class UserService(WriteService):
         return user
 
     def get_all_users(self) -> list[User]:
-        return self.user_repository.get_all_users()
+        return self._users.get_all_users()
 
     def set_admin_status(self, user_id: int, *, is_admin: bool) -> User:
         with self._write():
@@ -118,10 +118,10 @@ class UserService(WriteService):
         hashed_password = get_password_hash(password)
 
         with self._write():
-            if self.user_repository.get_by_username(username) is not None:
+            if self._users.get_by_username(username) is not None:
                 raise AlreadyExistsError("User", "username", username)
 
-            user = self.user_repository.create(
+            user = self._users.create(
                 username=username,
                 hashed_password=hashed_password,
                 name=name,

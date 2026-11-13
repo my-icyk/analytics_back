@@ -8,9 +8,9 @@ from app.api.v1.schemas.finance import (
     DivisionUpdate,
 )
 from app.core.permisions import PermissionEnum
-from app.services.finance_group_service import FinanceGroupService
+from app.services.finance.finance_group_service import FinanceGroupService
 
-router = APIRouter(prefix="/divisions")
+router = APIRouter()
 
 
 @router.get("", response_model=list[DivisionDetails])

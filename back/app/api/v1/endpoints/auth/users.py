@@ -19,10 +19,10 @@ from app.api.v1.schemas.user import (
 from app.core.permisions import PermissionEnum
 from app.db.models.auth import User
 from app.schemas.role_schema import RoleRead
+from app.services.auth.role_permission_service import RolePermissionService
 from app.services.auth.user_service import UserService
-from app.services.role_permission_service import RolePermissionService
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter()
 
 
 @router.get("/me", response_model=MyUser)
