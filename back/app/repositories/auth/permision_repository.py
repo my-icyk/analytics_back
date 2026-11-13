@@ -18,3 +18,9 @@ class PermissionRepository:
 
         stmt = select(Permission.id).where(Permission.id.in_(ids))
         return set(self._session.scalars(stmt))
+
+    def get_names(self) -> set[str]:
+        return set(self._session.scalars(select(Permission.name)))
+
+    def add_names(self, names: list[str]) -> None:
+        self._session.add_all(Permission(name=name) for name in names)
