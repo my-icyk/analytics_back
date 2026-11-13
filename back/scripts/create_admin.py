@@ -1,70 +1,48 @@
-"""
-Script to create the first admin user.
-
-Run with:
-    uv run python scripts/create_admin.py
-"""
+"""Create an admin user. Run from back/: uv run python scripts/create_admin.py"""
 
 import sys
 from getpass import getpass
 from pathlib import Path
 
-# Add project root to Python path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+# Allow direct execution from the scripts directory.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.core.security import get_password_hash
 from app.db.database import SessionLocal
-from app.exceptions.exceptions import AlreadyExistsError
-from app.repositories.user_repository import UserRepository
+from app.exceptions.exceptions import AlreadyExistsError, PasswordMismatchError
+from app.repositories.auth import UserRepository
+from app.services.auth import UserService
+from app.services.common import Conflict
 
 
-def create_admin_user():
-    db = SessionLocal()
-    repo = UserRepository(db)
+def main() -> int:
+    print("Create admin user")
+
+    username = input("Username: ").strip().lower()
+    if not username:
+        print("Username cannot be empty.", file=sys.stderr)
+        return 1
+
+    name = input(f"Display name [{username}]: ").strip() or username
+
+    password = getpass("Password: ")
+    if password != getpass("Confirm password: "):
+        print("Passwords do not match.", file=sys.stderr)
+        return 1
 
     try:
-        print("=== Create First Admin User ===\n")
+        with SessionLocal() as db:
+            service = UserService(session=db, user_repository=UserRepository(db))
+            service.create_admin_user(username=username, password=password, name=name)
+    except (AlreadyExistsError, PasswordMismatchError, ValueError) as exc:
+        print(f"Could not create admin: {exc}", file=sys.stderr)
+        return 1
+    except Conflict as exc:
+        print(f"Could not create admin: {exc.detail}", file=sys.stderr)
+        return 1
 
-        username = input("Username: ").strip().lower()
-
-        if not username:
-            print("❌ Username cannot be empty")
-            return
-
-        if repo.get_by_username(username):
-            raise AlreadyExistsError("User", "username", username)
-
-        password = getpass("Password: ")
-
-        if not password:
-            print("❌ Password cannot be empty")
-            return
-
-        password_confirm = getpass("Confirm Password: ")
-
-        if password != password_confirm:
-            print("❌ Passwords do not match")
-            return
-
-        user = repo.create(
-            username,
-            get_password_hash(password),
-            is_admin=True,
-        )
-
-        print(f"\n✅ Admin user '{username}' created successfully!")
-        db.commit()
-
-        return user
-
-    except AlreadyExistsError as e:
-        print(f"\n❌ {e}")
-    except Exception as e:
-        print(f"\n❌ Error creating admin user: {e}")
-    finally:
-        db.close()
-        pass
+    print(f"Admin user '{username}' created successfully.")
+    return 0
 
 
 if __name__ == "__main__":
-    create_admin_user()
+    raise SystemExit(main())

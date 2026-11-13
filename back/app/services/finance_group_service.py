@@ -1,6 +1,7 @@
 from datetime import date
 
 from app.api.v1.schemas.finance import GroupTypeDetails
+from app.db.models.finance import Company
 from app.domains.finance import (
     Deparment,
     DivisionDetail,
@@ -16,7 +17,6 @@ from app.exceptions.exceptions import (
     NotFoundError,
 )
 from app.filters.finance import DepartmentRepartitionFilter, GroupFilter
-from app.models.finance.company import Company
 from app.read_models.finance import DepartmentRepartitionDetails
 from app.repositories.base import LookupResponse
 from app.repositories.department_repartition import DepartmentRepartitionRepository

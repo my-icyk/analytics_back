@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.db.models  # noqa: F401
 from app.api.v1.routes import api_router
 from app.exceptions.handlers import register_exception_handlers
 

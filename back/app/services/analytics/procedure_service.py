@@ -1,5 +1,5 @@
+from app.db.models.analytics import Procedure, ProcedureHistory
 from app.exceptions.exceptions import AlreadyExistsError, NotFoundError
-from app.models.analytics.procedure import Procedure, ProcedureHistory
 from app.repositories.analytics import ProcedureRepository
 
 

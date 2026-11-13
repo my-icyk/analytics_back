@@ -1,13 +1,19 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends
+from fastapi.security import APIKeyCookie
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.core.permisions import PermissionEnum
 from app.db.database import get_db
-from app.domains.user import User
+from app.db.models.auth import User
 from app.repositories.analytics.procedure_repository import ProcedureRepository
-from app.repositories.authentication_repository import AuthenticationRepository
-from app.repositories.authorization_repository import AuthorizationRepository
+from app.repositories.auth import UserRepository
+from app.repositories.auth.authorization_repository import AuthorizationRepository
+from app.repositories.auth.permision_repository import PermissionRepository
+from app.repositories.auth.role_permission_repository import RolePermissionRepository
+from app.repositories.auth.role_repository import RoleRepository
+from app.repositories.auth.session_repository import SessionRepository
+from app.repositories.auth.user_role_repository import UserRoleRepository
 from app.repositories.counter_update_repository import CounterUpdateRepository
 from app.repositories.department_repartition import DepartmentRepartitionRepository
 from app.repositories.division_repository import DivisionRepository
@@ -16,34 +22,28 @@ from app.repositories.group_repository import GroupRepository
 from app.repositories.group_rule_repository import GroupRuleRepository
 from app.repositories.group_rule_target_repository import GroupRuleTargetRepository
 from app.repositories.group_type_repository import GroupTypeRepository
-from app.repositories.permision_repository import PermissionRepository
-from app.repositories.role_permission_repository import RolePermissionRepository
-from app.repositories.role_repository import RoleRepository
 from app.repositories.snapshot_repository import SnapshotRepository
 from app.repositories.specific_repository import SpecificRepository
-from app.repositories.user_repository import UserRepository
-from app.repositories.user_role_repository import UserRoleRepository
 from app.services.analytics.procedure_service import ProcedureService
-from app.services.authentication_service import AuthenticationService
-from app.services.authorization_service import AuthorizationService
+from app.services.auth.authentication_service import AuthenticationService
+from app.services.auth.authorization_service import AuthorizationService
+from app.services.auth.user_service import UserService
 from app.services.counter_update_service import CounterUpdateService
+from app.services.employees.credit_service import CreditService
+from app.services.employees.employee_service import EmployeeService
 from app.services.finance_group_service import FinanceGroupService
 from app.services.finance_rule_service import FinanceRuleService
 from app.services.role_permission_service import RolePermissionService
 from app.services.snapshot import SnapshotService
 from app.services.specific_service import SpecificService
-from app.services.user_service import UserService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", auto_error=True)
+settings = get_settings()
+session_cookie = APIKeyCookie(name=settings.SESSION_COOKIE_NAME, auto_error=False)
 
 
 # TODO: WTF HERE IS HAPPENDS
 def get_specific_repository(db: Session = Depends(get_db)) -> SpecificRepository:
     return SpecificRepository(db)
-
-
-def get_auth_repository(db: Session = Depends(get_db)) -> AuthenticationRepository:
-    return AuthenticationRepository(db)
 
 
 def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
@@ -66,12 +66,6 @@ def get_user_role_repository(db: Session = Depends(get_db)) -> UserRoleRepositor
 
 def get_permission_repository(db: Session = Depends(get_db)) -> PermissionRepository:
     return PermissionRepository(db)
-
-
-def get_authorization_repository(
-    db: Session = Depends(get_db),
-) -> AuthorizationRepository:
-    return AuthorizationRepository(db)
 
 
 def get_counter_update_repository(
@@ -109,11 +103,8 @@ def get_group_type_repository(db: Session = Depends(get_db)) -> GroupTypeReposit
 
 
 # Services
-def get_auth_service(
-    user_repo: UserRepository = Depends(get_user_repository),
-    auth_repo: AuthenticationRepository = Depends(get_auth_repository),
-) -> AuthenticationService:
-    return AuthenticationService(user_repo, auth_repo)
+def get_auth_service(db: Session = Depends(get_db)) -> AuthenticationService:
+    return AuthenticationService(db, SessionRepository(db))
 
 
 def get_specific_service(
@@ -122,27 +113,23 @@ def get_specific_service(
     return SpecificService(specific_repo)
 
 
-def get_user_service(
-    user_repo: UserRepository = Depends(get_user_repository),
-) -> UserService:
-    return UserService(user_repo)
+def get_user_service(db: Session = Depends(get_db)) -> UserService:
+    return UserService(
+        session=db,
+        user_repository=UserRepository(db),
+    )
 
 
 def get_role_permission_service(
-    role_repository: RoleRepository = Depends(get_role_repository),
-    permission_repository: PermissionRepository = Depends(get_permission_repository),
-    role_permission_repository: RolePermissionRepository = Depends(
-        get_role_permission_repository
-    ),
-    user_role_repository: UserRoleRepository = Depends(get_user_role_repository),
-    user_repository: UserRepository = Depends(get_user_repository),
+    db: Session = Depends(get_db),
 ) -> RolePermissionService:
     return RolePermissionService(
-        role_repository=role_repository,
-        permission_repository=permission_repository,
-        role_permission_repository=role_permission_repository,
-        user_role_repository=user_role_repository,
-        user_repository=user_repository,
+        session=db,
+        role_repository=RoleRepository(db),
+        permission_repository=PermissionRepository(db),
+        role_permission_repository=RolePermissionRepository(db),
+        user_role_repository=UserRoleRepository(db),
+        user_repository=UserRepository(db),
     )
 
 
@@ -155,43 +142,29 @@ def get_counter_update_service(
 
 
 def get_authorization_service(
-    authorization_repo: AuthorizationRepository = Depends(get_authorization_repository),
+    db: Session = Depends(get_db),
 ) -> AuthorizationService:
     return AuthorizationService(
-        authorization_repo=authorization_repo,
+        authorization_repo=AuthorizationRepository(db),
     )
 
 
-# requirements
 def require_permission(permission: PermissionEnum):
-    def permission_dependency(
-        token: str | None = Depends(oauth2_scheme),
-        auth_service: AuthenticationService = Depends(get_auth_service),
-        authorization_service: AuthorizationService = Depends(
-            get_authorization_service
-        ),
+    def check(
+        user: User = Depends(get_current_user),
+        service: AuthorizationService = Depends(get_authorization_service),
     ) -> User:
-        if token is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-            )
-        user = auth_service.authenticate_user(token)
-
-        authorization_service.require_permission(
-            user,
-            permission,
-        )
+        service.require_permission(user, permission)
         return user
 
-    return permission_dependency
+    return check
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    auth_service: AuthenticationService = Depends(get_auth_service),
+    token: str | None = Depends(session_cookie),
+    service: AuthenticationService = Depends(get_auth_service),
 ) -> User:
-    return auth_service.authenticate_user(token)
+    return service.authenticate_user(token)
 
 
 def get_company_repository(db: Session = Depends(get_db)) -> CompanyRepo:
@@ -247,3 +220,15 @@ def get_procedure_service(
     return ProcedureService(
         procedure_repository=procedure_repository,
     )
+
+
+def get_employee_service(
+    session: Session = Depends(get_db),
+) -> EmployeeService:
+    return EmployeeService(session=session)
+
+
+def get_credit_service(
+    session: Session = Depends(get_db),
+) -> CreditService:
+    return CreditService(session=session)

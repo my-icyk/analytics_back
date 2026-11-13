@@ -17,6 +17,7 @@ from app.exceptions.exceptions import (
     ForbiddenError,
     InactiveUserError,
     InvalidCredentialsError,
+    InvalidSessionError,
     InvalidTokenError,
     NotFoundError,
     PasswordMismatchError,
@@ -102,4 +103,11 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=400,
             content={"detail": str(exc.message)},
+        )
+
+    @app.exception_handler(InvalidSessionError)
+    def invalid_session_error_handler(_request: Request, exc: InvalidSessionError):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": str(exc)},
         )
