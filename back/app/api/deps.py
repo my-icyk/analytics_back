@@ -150,7 +150,11 @@ def get_procedure_service(
 def get_employee_service(
     session: Session = Depends(get_db),
 ) -> EmployeeService:
-    return EmployeeService(session=session)
+    return EmployeeService(
+        session=session,
+        employee_repo=EmployeeRepository(session),
+        credit_repo=CreditRepository(session),
+    )
 
 
 def get_credit_service(
