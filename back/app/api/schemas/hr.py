@@ -42,12 +42,10 @@ class CreditTerms(InputModel):
         return self
 
 
-class CreditCreate(CreditTerms):
-    employee_id: PositiveId
+class CreditCreate(CreditTerms): ...
 
 
-class CreditUpdate(CreditTerms):
-    """PUT replaces all editable terms; employee_id and status are immutable here."""
+class CreditUpdate(CreditTerms): ...
 
 
 class CreditPayOff(InputModel):

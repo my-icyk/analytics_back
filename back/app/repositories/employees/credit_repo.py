@@ -42,13 +42,13 @@ class CreditRepository:
         *,
         limit: int,
         offset: int,
-        employee_ids: list[int] | None = None,
+        employee_id: int,
         statuses: list[CreditStatus] | None = None,
         search: str | None = None,
     ) -> tuple[list[EmployeeCredit], int]:
         predicates = []
-        if employee_ids:
-            predicates.append(EmployeeCredit.employee_id.in_(employee_ids))
+        if employee_id:
+            predicates.append(EmployeeCredit.employee_id == employee_id)
         if statuses:
             predicates.append(
                 EmployeeCredit.status.in_([value.value for value in statuses])

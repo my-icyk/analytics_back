@@ -21,3 +21,11 @@ def list_employees(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get("/{employee_id}", response_model=EmployeeRead)
+def get_employee(
+    employee_id: int,
+    service: EmployeeService = Depends(get_employee_service),
+):
+    return service.get(employee_id)

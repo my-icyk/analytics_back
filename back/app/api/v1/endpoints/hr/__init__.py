@@ -7,4 +7,6 @@ router = APIRouter(
 )
 
 router.include_router(employees.router, prefix="/employees", tags=["hr"])
-router.include_router(credits.router, prefix="/credits", tags=["Employee credits"])
+router.include_router(
+    credits.router, prefix="/employees/{employee_id}/credits", tags=["Employee credits"]
+)

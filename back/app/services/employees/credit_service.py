@@ -35,14 +35,14 @@ class CreditService(WriteService):
         *,
         limit: int,
         offset: int,
-        employee_ids: list[int] | None = None,
+        employee_id: int,
         statuses: list[CreditStatus] | None = None,
         search: str | None = None,
     ) -> tuple[list[EmployeeCredit], int]:
         return self._credits.get_page(
             limit=limit,
             offset=offset,
-            employee_ids=employee_ids,
+            employee_id=employee_id,
             statuses=statuses,
             search=search,
         )
@@ -58,14 +58,15 @@ class CreditService(WriteService):
         if credit.status != CreditStatus.ACTIVE.value:
             raise Conflict("Only active credits can be edited or paid off")
 
-    def create(self, data: CreditCreate, *, created_by: int) -> int:
+    def create(self, data: CreditCreate, *, employee_id: int, created_by: int) -> int:
         with self._write():
-            if self._employees.get_by_id(data.employee_id) is None:
+            if self._employees.get_by_id(employee_id) is None:
                 raise NotFoundError(
-                    entity="Employee", field="id", value=str(data.employee_id)
+                    entity="Employee", field="id", value=str(employee_id)
                 )
             credit = EmployeeCredit(
                 **data.model_dump(),
+                employee_id=employee_id,
                 created_by=created_by,
                 status=CreditStatus.ACTIVE.value,
             )
@@ -81,9 +82,11 @@ class CreditService(WriteService):
             credit_id = credit.id
         return credit_id
 
-    def update(self, credit_id: int, data: CreditUpdate) -> None:
+    def update(self, credit_id: int, employee_id: int, data: CreditUpdate) -> None:
         with self._write():
             credit = self._get_locked(credit_id)
+            if employee_id != credit.employee_id:
+                raise Conflict("Cannot update credit for a different employee")
             self._require_active(credit)
             for field, value in data.model_dump().items():
                 setattr(credit, field, value)

@@ -24,9 +24,9 @@ router = APIRouter()
     dependencies=[Depends(require_permission(PermissionEnum.HR_CREDIT_READ))],
 )
 def list_credits(
+    employee_id: PositiveId,
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0, le=2147483647),
-    employee_ids: list[PositiveId] | None = Query(None, max_length=200),
     statuses: list[CreditStatus] | None = Query(None, max_length=3),
     search: str | None = Query(None, max_length=255),
     service: CreditService = Depends(get_credit_service),
@@ -34,7 +34,7 @@ def list_credits(
     items, total = service.get_page(
         limit=limit,
         offset=offset,
-        employee_ids=employee_ids,
+        employee_id=employee_id,
         statuses=statuses,
         search=search,
     )
@@ -64,12 +64,13 @@ def get_credit(
     status_code=201,
 )
 def create_credit(
+    employee_id: PositiveId,
     data: CreditCreate,
     current_user=Depends(require_permission(PermissionEnum.HR_CREDIT_CREATE)),
     service: CreditService = Depends(get_credit_service),
 ):
 
-    id = service.create(data, created_by=current_user.id)
+    id = service.create(data, employee_id=employee_id, created_by=current_user.id)
     return IdResponse(id=id)
 
 
@@ -79,11 +80,12 @@ def create_credit(
     dependencies=[Depends(require_permission(PermissionEnum.HR_CREDIT_CREATE))],
 )
 def update_credit(
+    employee_id: PositiveId,
     data: CreditUpdate,
     credit_id: int = Path(gt=0, le=2147483647),
     service: CreditService = Depends(get_credit_service),
 ):
-    service.update(credit_id, data)
+    service.update(credit_id, employee_id=employee_id, data=data)
 
 
 @router.post(
