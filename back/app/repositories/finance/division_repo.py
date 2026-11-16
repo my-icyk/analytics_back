@@ -1,5 +1,5 @@
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy import desc, select
+from sqlalchemy.orm import Session, joinedload
 
 from app.db.models.finance import Division
 
@@ -16,8 +16,12 @@ class DivisionRepo:
         return self._session.scalar(stmt)
 
     def get_all(self) -> list[Division]:
-        stmt = select(Division).order_by(Division.name, Division.id)
-        return list(self._session.scalars(stmt))
+        stmt = (
+            select(Division)
+            .options(joinedload(Division.company))
+            .order_by(desc(Division.group_count), desc(Division.id))
+        )
+        return list(self._session.scalars(stmt).all())
 
     def create(self, name: str, is_administrative: bool, company_id: int | None) -> int:
         division = Division(

@@ -8,12 +8,17 @@ class Base(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class DivisionRead(Base):
+class CompanyRead(BaseModel):
+    id: int
+    name: str
+
+
+class DivisionRead(BaseModel):
     id: int
     name: str
     is_administrative: bool
     company_id: int
-    company_name: str
+    company: CompanyRead
 
 
 class DivisionDetails(DivisionRead):
@@ -155,8 +160,3 @@ class DepartmentRead(Base):
 
 class CopyTargetsIn(Base):
     source_rule_id: int
-
-
-class CompanyRead(Base):
-    id: int
-    name: str
