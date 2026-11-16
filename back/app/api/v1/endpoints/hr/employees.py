@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import get_employee_service
-from app.api.schemas.employee import EmployeeRead, Page
+from app.api.schemas.hr import EmployeeRead, Page
 from app.services.employees.employee_service import EmployeeService
 
 router = APIRouter()

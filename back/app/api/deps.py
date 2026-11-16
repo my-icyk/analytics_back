@@ -17,6 +17,8 @@ from app.repositories.auth import (
     UserRoleRepo,
 )
 from app.repositories.counter_update_repository import CounterUpdateRepository
+from app.repositories.employees.credit_repo import CreditRepository
+from app.repositories.employees.employee_repo import EmployeeRepository
 from app.repositories.finance import (
     CompanyRepo,
     DepartmentRepartitionRepo,
@@ -154,4 +156,8 @@ def get_employee_service(
 def get_credit_service(
     session: Session = Depends(get_db),
 ) -> CreditService:
-    return CreditService(session=session)
+    return CreditService(
+        session=session,
+        credit_repo=CreditRepository(session),
+        employee_repo=EmployeeRepository(session),
+    )

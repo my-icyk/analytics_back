@@ -2,13 +2,9 @@ from fastapi import APIRouter
 
 from . import credits, employees
 
-router = APIRouter(prefix="/hr", tags=["hr"])
+router = APIRouter(
+    prefix="/hr",
+)
 
-router.include_router(
-    employees.router,
-    prefix="/employees",
-)
-router.include_router(
-    credits.router,
-    prefix="/credits",
-)
+router.include_router(employees.router, prefix="/employees", tags=["hr"])
+router.include_router(credits.router, prefix="/credits", tags=["Employee credits"])

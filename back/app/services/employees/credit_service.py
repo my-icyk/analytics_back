@@ -13,10 +13,16 @@ from app.utils import generate_schedule
 
 
 class CreditService(WriteService):
-    def __init__(self, session: Session):
+    def __init__(
+        self,
+        session: Session,
+        *,
+        credit_repo: CreditRepository,
+        employee_repo: EmployeeRepository,
+    ):
         super().__init__(session)
-        self._credits = CreditRepository(session)
-        self._employees = EmployeeRepository(session)
+        self._credits = credit_repo
+        self._employees = employee_repo
 
     def get(self, credit_id: int) -> EmployeeCredit:
         credit = self._credits.get_by_id(credit_id)
@@ -52,7 +58,7 @@ class CreditService(WriteService):
         if credit.status != CreditStatus.ACTIVE.value:
             raise Conflict("Only active credits can be edited or paid off")
 
-    def create(self, data: CreditCreate, *, created_by: int) -> EmployeeCredit:
+    def create(self, data: CreditCreate, *, created_by: int) -> int:
         with self._write():
             if self._employees.get_by_id(data.employee_id) is None:
                 raise NotFoundError(
@@ -73,9 +79,9 @@ class CreditService(WriteService):
                 ),
             )
             credit_id = credit.id
-        return self.get(credit_id)
+        return credit_id
 
-    def update(self, credit_id: int, data: CreditUpdate) -> EmployeeCredit:
+    def update(self, credit_id: int, data: CreditUpdate) -> None:
         with self._write():
             credit = self._get_locked(credit_id)
             self._require_active(credit)
@@ -91,9 +97,8 @@ class CreditService(WriteService):
                     credit.start_month,
                 ),
             )
-        return self.get(credit_id)
 
-    def pay_off(self, credit_id: int, paid_off_on: date) -> EmployeeCredit:
+    def pay_off(self, credit_id: int, paid_off_on: date) -> None:
         with self._write():
             credit = self._get_locked(credit_id)
             if credit.status == CreditStatus.PAID_OFF.value:
@@ -110,9 +115,8 @@ class CreditService(WriteService):
                 credit.paid_off_on = paid_off_on
                 credit.updated_at = func.current_timestamp()
                 self._credits.remove_schedule_from(credit, paid_off_on.replace(day=1))
-        return self.get(credit_id)
 
-    def cancel(self, credit_id: int) -> EmployeeCredit:
+    def cancel(self, credit_id: int) -> None:
         with self._write():
             credit = self._get_locked(credit_id)
             if credit.status == CreditStatus.PAID_OFF.value:
@@ -121,7 +125,6 @@ class CreditService(WriteService):
                 credit.status = CreditStatus.CANCELLED.value
                 credit.updated_at = func.current_timestamp()
                 self._credits.replace_schedule(credit, [])
-        return self.get(credit_id)
 
     def delete(self, credit_id: int) -> None:
         with self._write():
