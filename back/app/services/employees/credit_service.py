@@ -4,7 +4,7 @@ from decimal import InvalidOperation
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.api.schemas.employee import CreditCreate, CreditUpdate
+from app.api.schemas.hr import CreditCreate, CreditUpdate
 from app.db.models.hr import CreditStatus, EmployeeCredit
 from app.exceptions.exceptions import NotFoundError
 from app.repositories.employees import CreditRepository, EmployeeRepository
