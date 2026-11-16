@@ -4,9 +4,9 @@ from app.api.v1.endpoints import (
     analytics,
     auth,
     counters_update,
-    employees,
     finance,
     health,
+    hr,
     specific,
 )
 
@@ -20,4 +20,4 @@ api_router.include_router(counters_update.exceptions_router)
 api_router.include_router(specific.router)
 api_router.include_router(finance.router)
 api_router.include_router(analytics.router)
-api_router.include_router(employees.router)
+api_router.include_router(hr.router)
