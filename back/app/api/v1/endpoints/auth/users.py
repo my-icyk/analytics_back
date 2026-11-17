@@ -1,0 +1,156 @@
+from fastapi import APIRouter, Depends, status
+
+from app.api.deps import (
+    get_current_user,
+    get_role_permission_service,
+    get_user_service,
+    require_permission,
+)
+from app.api.v1.schemas.auth import AssignUserRolesRequest, UserAdminUpdate
+from app.api.v1.schemas.user import (
+    EmployeeDetails,
+    MyUser,
+    PasswordChange,
+    PasswordReset,
+    UserCreate,
+    UserRead,
+    UserUpdate,
+)
+from app.core.permisions import PermissionEnum
+from app.db.models.auth import User
+from app.schemas.role_schema import RoleRead
+from app.services.auth.role_permission_service import RolePermissionService
+from app.services.auth.user_service import UserService
+
+router = APIRouter()
+
+
+@router.get("/me", response_model=MyUser)
+def get_me(
+    user_service: UserService = Depends(get_user_service),
+    role_permission_service: RolePermissionService = Depends(
+        get_role_permission_service
+    ),
+    current_user: User = Depends(get_current_user),
+):
+    # TODO: NU ESTE CORECT DE STARNS AICI, PROBABIL SERVICE TREBUIE SA FACA ASTA
+    roles = role_permission_service.get_roles_by_user_id(current_user.id)
+    permissions = role_permission_service.get_permissions_by_user_id(current_user.id)
+    employee_details = user_service.get_employee_details(current_user)
+    return MyUser(
+        id=current_user.id,
+        username=current_user.username,
+        is_admin=current_user.is_admin,
+        created_at=current_user.created_at,
+        email=current_user.email,
+        name=current_user.name,
+        roles=[role.name for role in roles],
+        permissions=[permission.name for permission in permissions],
+        employee_details=EmployeeDetails.model_validate(employee_details)
+        if employee_details
+        else None,
+    )
+
+
+@router.get("", response_model=list[UserRead])
+def get_all_users(
+    service: UserService = Depends(get_user_service),
+    _: int = Depends(require_permission(PermissionEnum.USER_READ)),
+):
+
+    return service.get_all_users()
+
+
+@router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+def create_user(
+    payload: UserCreate,
+    service: UserService = Depends(get_user_service),
+    _: int = Depends(require_permission(PermissionEnum.USER_CREATE)),
+):
+
+    return service.create_user(
+        payload.username,
+        payload.password,
+        payload.name,
+        payload.email,
+    )
+
+
+@router.get("/{user_id}", response_model=UserRead)
+def get_user(
+    user_id: int,
+    service: UserService = Depends(get_user_service),
+    _: int = Depends(require_permission(PermissionEnum.USER_READ)),
+):
+    return service.get_user(user_id)
+
+
+@router.put("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def update_user(
+    user_id: int,
+    payload: UserUpdate,
+    service: UserService = Depends(get_user_service),
+    _: int = Depends(require_permission(PermissionEnum.USER_UPDATE)),
+):
+    service.update_user(
+        user_id, payload.username, payload.email, payload.is_active, payload.name
+    )
+
+
+@router.patch("/{user_id}/admin", response_model=UserRead)
+def update_admin_status(
+    user_id: int,
+    payload: UserAdminUpdate,
+    service: UserService = Depends(get_user_service),
+    _: User = Depends(require_permission(PermissionEnum.MANAGE_ADMIN_RIGHTS)),
+):
+    return service.set_admin_status(user_id, is_admin=payload.is_admin)
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: int,
+    service: UserService = Depends(get_user_service),
+    _: int = Depends(require_permission(PermissionEnum.USER_DELETE)),
+):
+    service.delete_user(user_id)
+
+
+@router.get("/{user_id}/roles", response_model=list[RoleRead])
+def get_roles_by_user_id(
+    user_id: int,
+    service: RolePermissionService = Depends(get_role_permission_service),
+    _=Depends(require_permission(PermissionEnum.USER_ROLE_READ)),
+):
+    return service.get_roles_by_user_id(user_id)
+
+
+@router.put("/{user_id}/roles", status_code=status.HTTP_204_NO_CONTENT)
+def assign_roles_to_user(
+    user_id: int,
+    payload: AssignUserRolesRequest,
+    service: RolePermissionService = Depends(get_role_permission_service),
+    _: int = Depends(require_permission(PermissionEnum.AUTH_USER_ASSIGN_ROLES)),
+):
+    service.assign_roles(user_id, payload.role_ids)
+
+
+@router.put("/me/password", status_code=204)
+def change_my_password(
+    body: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    service: UserService = Depends(get_user_service),
+) -> None:
+    service.change_own_password(current_user, body.current_password, body.new_password)
+
+
+@router.put("/{user_id}/password", status_code=204)
+def reset_user_password(
+    user_id: int,
+    body: PasswordReset,
+    current_user: User = Depends(
+        require_permission(PermissionEnum.AUTH_USER_ASSIGN_ROLES)
+    ),
+    service: UserService = Depends(get_user_service),
+) -> None:
+    service.reset_password(current_user, user_id, body.new_password)

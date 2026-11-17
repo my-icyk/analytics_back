@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
-from app.api.schemas.employee import PurchaseLimitUpdate
+from app.api.schemas.hr import PurchaseLimitUpdate
 from app.db.models.hr import Employee
 from app.exceptions.exceptions import NotFoundError
 from app.repositories.employees import CreditRepository, EmployeeRepository
@@ -12,10 +12,16 @@ from app.utils import month_end
 
 
 class EmployeeService(WriteService):
-    def __init__(self, session: Session):
+    def __init__(
+        self,
+        session: Session,
+        *,
+        employee_repo: EmployeeRepository,
+        credit_repo: CreditRepository,
+    ):
         super().__init__(session)
-        self._employees = EmployeeRepository(session)
-        self._credits = CreditRepository(session)
+        self._employees = employee_repo
+        self._credits = credit_repo
 
     def get(self, employee_id: int) -> Employee:
         employee = self._employees.get_by_id(employee_id)

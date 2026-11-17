@@ -1,18 +1,24 @@
 from datetime import date
+from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Base(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class DivisionRead(Base):
+class CompanyRead(BaseModel):
+    id: int
+    name: str
+
+
+class DivisionRead(BaseModel):
     id: int
     name: str
     is_administrative: bool
     company_id: int
-    company_name: str
+    company: CompanyRead
 
 
 class DivisionDetails(DivisionRead):
@@ -85,21 +91,21 @@ class RuleRead(Base):
     name: str
     valid_from: date
     valid_to: date | None
-    percent_value: float
+    percent_value: Decimal
 
 
 class RuleCreate(Base):
     name: str
     valid_from: date
     valid_to: date | None = None
-    percent_value: float
+    percent_value: Decimal = Field(ge=0, le=100)
 
 
 class RuleUpdate(Base):
     name: str
     valid_from: date
     valid_to: date | None = None
-    percent_value: float
+    percent_value: Decimal = Field(ge=0, le=100)
 
 
 class TargetRead(Base):
@@ -107,28 +113,30 @@ class TargetRead(Base):
     group_id: int
     group_name: str
     allocation_type: str
-    percent_value: float | None
+    percent_value: Decimal | None
 
 
 class TargetCreate(Base):
     group_id: int
     allocation_type: str
-    percent_value: float | None
+    percent_value: Decimal | None
 
 
 class TargetUpdate(Base):
     group_id: int
     allocation_type: str
-    percent_value: float | None
+    percent_value: Decimal | None
 
 
 class DepartmentRepartitionRead(Base):
     id: int
     department_id: int
+    department_code: str
     department_name: str
     valid_from: date
     valid_to: date | None
     is_active: bool
+    brand_name: str
 
 
 class DepartmentRepartitionCreate(Base):
@@ -152,8 +160,3 @@ class DepartmentRead(Base):
 
 class CopyTargetsIn(Base):
     source_rule_id: int
-
-
-class CompanyRead(Base):
-    id: int
-    name: str

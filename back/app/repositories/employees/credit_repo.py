@@ -1,13 +1,12 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import delete, func, or_, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db.models.hr import (
     CreditRepartition,
     CreditStatus,
-    Employee,
     EmployeeCredit,
 )
 
@@ -42,25 +41,17 @@ class CreditRepository:
         *,
         limit: int,
         offset: int,
-        employee_ids: list[int] | None = None,
+        employee_id: int,
         statuses: list[CreditStatus] | None = None,
-        search: str | None = None,
     ) -> tuple[list[EmployeeCredit], int]:
         predicates = []
-        if employee_ids:
-            predicates.append(EmployeeCredit.employee_id.in_(employee_ids))
+        if employee_id:
+            predicates.append(EmployeeCredit.employee_id == employee_id)
         if statuses:
             predicates.append(
                 EmployeeCredit.status.in_([value.value for value in statuses])
             )
-        if search and search.strip():
-            text = search.strip()
-            predicates.append(
-                or_(
-                    Employee.name.contains(text, autoescape=True),
-                    Employee.employee_ref.contains(text, autoescape=True),
-                )
-            )
+
         base = select(EmployeeCredit).join(EmployeeCredit.employee).where(*predicates)
         total = (
             self._session.scalar(

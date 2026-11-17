@@ -71,11 +71,6 @@ class GroupLookup(DomainModel):
     description: str
 
 
-class GroupPage(DomainModel):
-    items: list[GroupOverview]
-    total: int
-
-
 class GroupRule(DomainModel):
     id: int
     name: str

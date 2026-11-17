@@ -1,11 +1,11 @@
 from app.db.database import SessionLocal
-from app.repositories.auth.permision_repository import PermissionRepository
+from app.repositories.auth.permission_repo import PermissionRepo
 from app.services.auth.permission_sync_service import PermissionSyncService
 
 
 def main() -> None:
     with SessionLocal() as db:
-        service = PermissionSyncService(db, PermissionRepository(db))
+        service = PermissionSyncService(db, PermissionRepo(db))
         result = service.sync_permissions()
 
     print("Permissions synchronization completed.")

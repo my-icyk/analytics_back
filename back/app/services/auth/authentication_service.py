@@ -11,16 +11,16 @@ from app.exceptions.exceptions import (
     InvalidCredentialsError,
     InvalidSessionError,
 )
-from app.repositories.auth import SessionRepository
+from app.repositories.auth import SessionRepo
 from app.services.common import WriteService
 
 settings = get_settings()
 
 
 class AuthenticationService(WriteService):
-    def __init__(self, session: Session, sessions: SessionRepository):
+    def __init__(self, session: Session, *, session_repo: SessionRepo):
         super().__init__(session)
-        self._sessions = sessions
+        self._sessions = session_repo
 
     def login(self, username: str, password: str) -> str:
         with self._write():
