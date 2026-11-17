@@ -37,14 +37,12 @@ class CreditService(WriteService):
         offset: int,
         employee_id: int,
         statuses: list[CreditStatus] | None = None,
-        search: str | None = None,
     ) -> tuple[list[EmployeeCredit], int]:
         return self._credits.get_page(
             limit=limit,
             offset=offset,
             employee_id=employee_id,
             statuses=statuses,
-            search=search,
         )
 
     def _get_locked(self, credit_id: int) -> EmployeeCredit:

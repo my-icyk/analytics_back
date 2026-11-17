@@ -112,3 +112,9 @@ class Page(BaseModel, Generic[T]):
     total: int
     limit: int
     offset: int
+
+
+class CreditFilter(BaseModel):
+    search: str | None = None
+    employee_id: int | None = None
+    status: CreditStatus | None = None

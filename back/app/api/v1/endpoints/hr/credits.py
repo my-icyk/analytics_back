@@ -28,7 +28,6 @@ def list_credits(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0, le=2147483647),
     statuses: list[CreditStatus] | None = Query(None, max_length=3),
-    search: str | None = Query(None, max_length=255),
     service: CreditService = Depends(get_credit_service),
 ):
     items, total = service.get_page(
@@ -36,7 +35,6 @@ def list_credits(
         offset=offset,
         employee_id=employee_id,
         statuses=statuses,
-        search=search,
     )
     return Page[CreditRead](
         items=[CreditRead.model_validate(item, from_attributes=True) for item in items],
