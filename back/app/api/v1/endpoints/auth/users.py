@@ -46,7 +46,9 @@ def get_me(
         name=current_user.name,
         roles=[role.name for role in roles],
         permissions=[permission.name for permission in permissions],
-        employee_details=EmployeeDetails.model_validate(employee_details),
+        employee_details=EmployeeDetails.model_validate(employee_details)
+        if employee_details
+        else None,
     )
 
 
